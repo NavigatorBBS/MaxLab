@@ -20,11 +20,17 @@ jobs:
         shell: pwsh
         run: |
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
-          $scriptFiles = Get-ChildItem -Path . -Include *.ps1 -Recurse -Exclude .github
+          $scriptFiles = @(Get-ChildItem -Path . -Include *.ps1 -Recurse -Exclude .github | Select-Object -ExpandProperty FullName)
           if ($scriptFiles.Count -gt 0) {
-            $results = Invoke-ScriptAnalyzer -Path $scriptFiles -Severity Warning
-            if ($results) {
-              Write-Error "PSScriptAnalyzer found issues:`n$($results | Format-List | Out-String)"
+            $allResults = @()
+            foreach ($file in $scriptFiles) {
+              $results = Invoke-ScriptAnalyzer -Path $file -Severity Warning
+              if ($results) {
+                $allResults += $results
+              }
+            }
+            if ($allResults) {
+              Write-Error "PSScriptAnalyzer found issues:`n$($allResults | Format-List | Out-String)"
               exit 1
             }
           }

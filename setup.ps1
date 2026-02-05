@@ -12,11 +12,11 @@ function Show-BbsHeader {
     $spaces  = " " * $padding
     $line    = "|$spaces$Title$spaces|"
 
-    Write-Host ""
-    Write-Host $border
-    Write-Host $line
-    Write-Host $border
-    Write-Host ""
+    Write-Information ""
+    Write-Information $border
+    Write-Information $line
+    Write-Information $border
+    Write-Information ""
 }
 Show-BbsHeader
 Show-BbsHeader -Title "Setting up MaxLab Environment"
@@ -40,7 +40,7 @@ $minicondaPath = "$env:USERPROFILE\miniconda3"
 $minicondaScriptsPath = "$minicondaPath\Scripts"
 if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
     $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Host "Added Miniconda to PATH: $minicondaPath"
+    Write-Information "Added Miniconda to PATH: $minicondaPath"
 }
 
 if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
@@ -55,39 +55,40 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
     exit 1
 }
 $condaHookString = $condaHook -join "`n"
-Invoke-Expression $condaHookString
+. ([scriptblock]::Create($condaHookString))
 
-Write-Host "Configuring conda-forge channel..."
+Write-Information "Configuring conda-forge channel..."
 conda config --add channels conda-forge 2>$null
 conda config --set channel_priority strict 2>$null
-Write-Host "Conda-forge channel configured (idempotent)."
+Write-Information "Conda-forge channel configured (idempotent)."
 
-Write-Host "Checking for existing environment '$envName'..."
+Write-Information "Checking for existing environment '$envName'..."
 $envExists = $false
 try {
     $envs = conda env list --json | ConvertFrom-Json
     $envExists = $null -ne ($envs.envs | Where-Object { $_ -match "[\\/]${envName}$" })
 } catch {
+    Write-Error "Error checking conda environments: $_"
     $envExists = $false
 }
 
 if (-not $envExists) {
-    Write-Host "Creating environment '$envName' with Python $pythonVersion..."
+    Write-Information "Creating environment '$envName' with Python $pythonVersion..."
     conda create -y -n $envName "python=$pythonVersion"
-    Write-Host "Environment '$envName' created successfully."
+    Write-Information "Environment '$envName' created successfully."
 } else {
-    Write-Host "Environment '$envName' already exists. Skipping creation (idempotent)."
+    Write-Information "Environment '$envName' already exists. Skipping creation (idempotent)."
 }
 
-Write-Host "Activating environment '$envName'..."
+Write-Information "Activating environment '$envName'..."
 conda activate $envName
 
-Write-Host "Installing/updating packages..."
+Write-Information "Installing/updating packages..."
 conda install -y @packages
-Write-Host "Packages installed/updated (idempotent)."
+Write-Information "Packages installed/updated (idempotent)."
 
-Write-Host "Registering Jupyter kernel 'MAXLAB'..."
+Write-Information "Registering Jupyter kernel 'MAXLAB'..."
 python -m ipykernel install --user --name $envName --display-name "MAXLAB" --force
-Write-Host "Jupyter kernel registered (idempotent)."
+Write-Information "Jupyter kernel registered (idempotent)."
 
-Write-Host "Setup complete. You can now run './start.ps1' to launch JupyterLab."
+Write-Information "Setup complete. You can now run './start.ps1' to launch JupyterLab."

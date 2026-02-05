@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 function Show-BbsHeader {
     param (
-        [string]$Title = "NavigatorBBS MaxLab Setup"
+        [string]$Title = "NavigatorBBS MaxLab Startup"
     )
 
     $padding = 4
@@ -16,11 +16,11 @@ function Show-BbsHeader {
     $spaces  = " " * $padding
     $line    = "|$spaces$Title$spaces|"
 
-    Write-Host ""
-    Write-Host $border
-    Write-Host $line
-    Write-Host $border
-    Write-Host ""
+    Write-Information ""
+    Write-Information $border
+    Write-Information $line
+    Write-Information $border
+    Write-Information ""
 }
 Show-BbsHeader
 Show-BbsHeader -Title "Starting JupyterLab in MaxLab Environment"
@@ -33,7 +33,7 @@ $minicondaPath = "$env:USERPROFILE\miniconda3"
 $minicondaScriptsPath = "$minicondaPath\Scripts"
 if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
     $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Host "Added Miniconda to PATH: $minicondaPath"
+    Write-Information "Added Miniconda to PATH: $minicondaPath"
 }
 
 if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
@@ -48,7 +48,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
     exit 1
 }
 $condaHookString = $condaHook -join "`n"
-Invoke-Expression $condaHookString
+. ([scriptblock]::Create($condaHookString))
 
 # Check if notebook directory exists
 if (-not (Test-Path $notebookDir)) {
@@ -56,20 +56,18 @@ if (-not (Test-Path $notebookDir)) {
     exit 1
 }
 
-Write-Host "Activating environment '$envName'..."
+Write-Information "Activating environment '$envName'..."
 conda activate $envName
 
 # Check if port is already in use
-$portInUse = $false
 try {
     $netstat = netstat -ano | Select-String ":$Port "
     if ($netstat) {
         Write-Warning "Port $Port is already in use. You can specify a different port: ./start.ps1 -Port 9000"
-        $portInUse = $true
     }
 } catch {
-    # netstat check failed, continue anyway
+    Write-Verbose "Port availability check failed: $_"
 }
 
-Write-Host "Starting JupyterLab on port $Port with notebook dir '$notebookDir'..."
+Write-Information "Starting JupyterLab on port $Port with notebook dir '$notebookDir'..."
 jupyter lab --port $Port --notebook-dir $notebookDir
