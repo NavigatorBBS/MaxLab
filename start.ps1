@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 function Show-BbsHeader {
     param (
-        [string]$Title = "NavigatorBBS MaxLab Setup"
+        [string]$Title = "NavigatorBBS MaxLab Startup"
     )
 
     $padding = 4

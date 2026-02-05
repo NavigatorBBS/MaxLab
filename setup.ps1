@@ -87,7 +87,7 @@ conda install -y @packages
 Write-Host "Packages installed/updated (idempotent)."
 
 Write-Host "Registering Jupyter kernel 'MAXLAB'..."
-python -m ipykernel install --user --name $envName --display-name "MAXLAB" --force
+python -m ipykernel install --user --name $envName --display-name "MAXLAB"
 Write-Host "Jupyter kernel registered (idempotent)."
 
 Write-Host "Setup complete. You can now run './start.ps1' to launch JupyterLab."
