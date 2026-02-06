@@ -103,7 +103,44 @@ jupyter lab --port $env:JUPYTER_PORT --notebook-dir $env:JUPYTER_NOTEBOOK_DIR
 
 ---
 
-## 📦 Runtime Package Installation
+## � Git Pre-commit Hooks
+
+This repository uses [pre-commit](https://pre-commit.com/) with [nbstripout](https://github.com/kynan/nbstripout) to automatically clear Jupyter notebook outputs before committing. This keeps your git history clean and prevents accidentally committing large outputs, execution counts, or sensitive data.
+
+### Initial Setup
+
+After cloning the repository and running `setup.ps1`, install the pre-commit hook:
+
+```powershell
+conda activate maxlab
+pre-commit install
+```
+
+The hook will now automatically run before each commit.
+
+### How It Works
+
+- **Automatic clearing:** Whenever you commit changes to notebooks in `workspace/notebooks/`, the pre-commit hook strips all outputs, execution counts, and metadata
+- **Seamless workflow:** Outputs are cleared and staged automatically; your commit proceeds normally
+- **Clean notebooks:** Notebooks in version control have `"outputs": []` for all cells, reducing repository size and noise
+
+### Manual notebook cleanup
+
+To manually clear outputs from all notebooks without committing:
+
+```powershell
+pre-commit run --all-files
+```
+
+To clear outputs from a specific notebook:
+
+```powershell
+nbstripout workspace/notebooks/your-notebook.ipynb
+```
+
+---
+
+## �📦 Runtime Package Installation
 
 To install additional packages at runtime within a notebook:
 
