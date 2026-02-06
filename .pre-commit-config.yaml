@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        name: Strip output from notebooks
+        description: Strip Jupyter notebook outputs
+        entry: nbstripout
+        language: python
+        files: ^workspace/notebooks/.*\.ipynb$
+        types:
+          - jupyter

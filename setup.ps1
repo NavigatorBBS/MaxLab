@@ -32,7 +32,9 @@ $packages = @(
     "seaborn",
     "scikit-learn",
     "ipykernel",
-    "python-dotenv"
+    "python-dotenv",
+    "pre-commit",
+    "nbstripout"
 )
 
 # Add Miniconda to PATH if not already present
@@ -88,7 +90,7 @@ conda install -y @packages
 Write-Information "Packages installed/updated (idempotent)."
 
 Write-Information "Registering Jupyter kernel 'MAXLAB'..."
-python -m ipykernel install --user --name $envName --display-name "MAXLAB" --force
+python -m ipykernel install --user --name $envName --display-name "MAXLAB"
 Write-Information "Jupyter kernel registered (idempotent)."
 
 Write-Information "Setup complete. You can now run './start.ps1' to launch JupyterLab."

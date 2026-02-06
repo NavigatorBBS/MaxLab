@@ -142,3 +142,9 @@ Thumbs.db
 
 # conda
 conda-env.yml.lock
+# Data files - exclude raw, processed, and temporary data
+workspace/raw/
+workspace/processed/
+workspace/temp/
+*.csv
+*.parquet
