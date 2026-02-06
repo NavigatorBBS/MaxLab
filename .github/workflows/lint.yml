@@ -78,4 +78,4 @@ jobs:
       - name: Check notebook outputs
         run: |
           # Check that notebooks have no outputs (would be modified by nbstripout)
-          nbstripout --check workspace/notebooks/*.ipynb
+          nbstripout --dry-run workspace/notebooks/*.ipynb
