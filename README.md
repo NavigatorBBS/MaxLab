@@ -33,9 +33,12 @@ List available steps or run a subset:
 
 ```powershell
 ./setup.ps1 -ListSteps
-./setup.ps1 -Steps envfile,conda,env,packages,pip,kernel,precommit,nbstripout
-```
+**Important:** Miniconda3 must be installed manually first before running the setup scripts.
 
+Install Miniconda3 by following the official instructions:
+https://www.anaconda.com/docs/getting-started/miniconda/main
+
+After installation, restart your terminal to ensure `conda` is available on your PATH.
 You can also run individual steps directly from the scripts folder.
 
 ```powershell
@@ -126,6 +129,42 @@ jupyter lab --port $env:JUPYTER_PORT --notebook-dir $env:JUPYTER_NOTEBOOK_DIR
 ```
 
 **Note:** If environment variables are not set, JupyterLab uses its defaults.
+
+## 🤖 MaxLab AI Chat Agent
+## 💻 GitHub Copilot CLI
+
+The setup script automatically installs Node.js and GitHub Copilot CLI. After installation, you must configure authentication manually.
+
+### Configure GitHub Copilot CLI
+
+After `setup.ps1` completes, authenticate with GitHub:
+
+```powershell
+copilot auth login
+```
+
+This will open a browser window to authenticate with your GitHub account. Follow the prompts to grant access to GitHub Copilot.
+
+### Verify Installation
+
+```powershell
+copilot --version
+copilot chat --help
+```
+
+### Usage
+
+Once authenticated, you can use GitHub Copilot CLI from PowerShell:
+
+```powershell
+# Ask a general question
+copilot explain "what is a lambda function in python"
+
+# Start an interactive chat session
+copilot chat
+```
+
+For more details, visit: https://github.com/github/copilot-cli
 
 ---
 ## 🤖 MaxLab AI Chat Agent

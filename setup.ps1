@@ -33,6 +33,8 @@ $scriptsDir = Join-Path $repoRoot "scripts"
 $availableSteps = [ordered]@{
     "envfile" = @{ Script = "setup-envfile.ps1"; Description = "Create .env from .env.example if missing" }
     "conda" = @{ Script = "setup-conda.ps1"; Description = "Configure conda-forge channel" }
+    "nodejs" = @{ Script = "setup-nodejs.ps1"; Description = "Install Node.js via winget" }
+    "copilot-cli" = @{ Script = "setup-copilot-cli.ps1"; Description = "Install GitHub Copilot CLI via npm" }
     "env" = @{ Script = "setup-env.ps1"; Description = "Create the maxlab conda environment" }
     "packages" = @{ Script = "setup-packages.ps1"; Description = "Install conda packages" }
     "pip" = @{ Script = "setup-pip.ps1"; Description = "Install project dependencies (dev + openai extras)" }
