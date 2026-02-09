@@ -2,21 +2,25 @@ $ErrorActionPreference = "Stop"
 
 function Show-BbsHeader {
     param (
-        [string]$Title = "NavigatorBBS MaxLab Setup"
+        [string]$Title = "NavigatorBBS MaxLab",
+        [ConsoleColor]$BorderColor = "Cyan",
+        [ConsoleColor]$TitleColor  = "Yellow"
     )
 
     $padding = 4
-    $width   = $Title.Length + ($padding * 2)
+    $innerWidth = $Title.Length + ($padding * 2)
 
-    $border  = "+" + ("-" * $width) + "+"
-    $spaces  = " " * $padding
-    $line    = "|$spaces$Title$spaces|"
+    $topBorder    = "╔" + ("═" * $innerWidth) + "╗"
+    $bottomBorder = "╚" + ("═" * $innerWidth) + "╝"
 
-    Write-Information ""
-    Write-Information $border
-    Write-Information $line
-    Write-Information $border
-    Write-Information ""
+    $spaces = " " * $padding
+    $line   = "║$spaces$Title$spaces║"
+
+    Write-Host ""
+    Write-Host $topBorder    -ForegroundColor $BorderColor
+    Write-Host $line         -ForegroundColor $TitleColor
+    Write-Host $bottomBorder -ForegroundColor $BorderColor
+    Write-Host ""
 }
 Show-BbsHeader
 Show-BbsHeader -Title "Setting up MaxLab Environment"
@@ -42,7 +46,7 @@ $minicondaPath = "$env:USERPROFILE\miniconda3"
 $minicondaScriptsPath = "$minicondaPath\Scripts"
 if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
     $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Information "Added Miniconda to PATH: $minicondaPath"
+    Write-Output "Added Miniconda to PATH: $minicondaPath"
 }
 
 if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
@@ -59,12 +63,12 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
 $condaHookString = $condaHook -join "`n"
 . ([scriptblock]::Create($condaHookString))
 
-Write-Information "Configuring conda-forge channel..."
+Write-Output "Configuring conda-forge channel..."
 conda config --add channels conda-forge 2>$null
 conda config --set channel_priority strict 2>$null
-Write-Information "Conda-forge channel configured (idempotent)."
+Write-Output "Conda-forge channel configured (idempotent)."
 
-Write-Information "Checking for existing environment '$envName'..."
+Write-Output "Checking for existing environment '$envName'..."
 $envExists = $false
 try {
     $envs = conda env list --json | ConvertFrom-Json
@@ -75,22 +79,31 @@ try {
 }
 
 if (-not $envExists) {
-    Write-Information "Creating environment '$envName' with Python $pythonVersion..."
+    Write-Output "Creating environment '$envName' with Python $pythonVersion..."
     conda create -y -n $envName "python=$pythonVersion"
-    Write-Information "Environment '$envName' created successfully."
+    Write-Output "Environment '$envName' created successfully."
 } else {
-    Write-Information "Environment '$envName' already exists. Skipping creation (idempotent)."
+    Write-Output "Environment '$envName' already exists. Skipping creation (idempotent)."
 }
 
-Write-Information "Activating environment '$envName'..."
+Write-Output "Activating environment '$envName'..."
 conda activate $envName
 
-Write-Information "Installing/updating packages..."
+Write-Output "Installing/updating packages..."
 conda install -y @packages
-Write-Information "Packages installed/updated (idempotent)."
+Write-Output "Packages installed/updated (idempotent)."
 
-Write-Information "Registering Jupyter kernel 'MAXLAB'..."
+Write-Output "Installing Semantic Kernel Python SDK via pip..."
+python -m pip install --upgrade "semantic-kernel>=1.39.0" "openai"
+Write-Output "Semantic Kernel installed (idempotent)."
+
+Write-Output "Installing MaxLab from pyproject.toml into environment..."
+python -m pip install --upgrade pip
+python -m pip install -e .
+Write-Output "MaxLab installed into environment (idempotent)."
+
+Write-Output "Registering Jupyter kernel 'MAXLAB'..."
 python -m ipykernel install --user --name $envName --display-name "MAXLAB"
-Write-Information "Jupyter kernel registered (idempotent)."
+Write-Output "Jupyter kernel registered (idempotent)."
 
-Write-Information "Setup complete. You can now run './start.ps1' to launch JupyterLab."
+Write-Output "Setup complete. You can now run './start.ps1' to launch JupyterLab."

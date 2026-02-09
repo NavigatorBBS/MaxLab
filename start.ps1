@@ -6,21 +6,25 @@ $ErrorActionPreference = "Stop"
 
 function Show-BbsHeader {
     param (
-        [string]$Title = "NavigatorBBS MaxLab Startup"
+        [string]$Title = "NavigatorBBS MaxLab",
+        [ConsoleColor]$BorderColor = "Cyan",
+        [ConsoleColor]$TitleColor  = "Yellow"
     )
 
     $padding = 4
-    $width   = $Title.Length + ($padding * 2)
+    $innerWidth = $Title.Length + ($padding * 2)
 
-    $border  = "+" + ("-" * $width) + "+"
-    $spaces  = " " * $padding
-    $line    = "|$spaces$Title$spaces|"
+    $topBorder    = "╔" + ("═" * $innerWidth) + "╗"
+    $bottomBorder = "╚" + ("═" * $innerWidth) + "╝"
 
-    Write-Information ""
-    Write-Information $border
-    Write-Information $line
-    Write-Information $border
-    Write-Information ""
+    $spaces = " " * $padding
+    $line   = "║$spaces$Title$spaces║"
+
+    Write-Host ""
+    Write-Host $topBorder    -ForegroundColor $BorderColor
+    Write-Host $line         -ForegroundColor $TitleColor
+    Write-Host $bottomBorder -ForegroundColor $BorderColor
+    Write-Host ""
 }
 Show-BbsHeader
 Show-BbsHeader -Title "Starting JupyterLab in MaxLab Environment"
@@ -33,7 +37,7 @@ $minicondaPath = "$env:USERPROFILE\miniconda3"
 $minicondaScriptsPath = "$minicondaPath\Scripts"
 if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
     $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Information "Added Miniconda to PATH: $minicondaPath"
+    Write-Output "Added Miniconda to PATH: $minicondaPath"
 }
 
 if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
@@ -56,7 +60,7 @@ if (-not (Test-Path $notebookDir)) {
     exit 1
 }
 
-Write-Information "Activating environment '$envName'..."
+Write-Output "Activating environment '$envName'..."
 conda activate $envName
 
 # Check if port is already in use
@@ -69,5 +73,5 @@ try {
     Write-Verbose "Port availability check failed: $_"
 }
 
-Write-Information "Starting JupyterLab on port $Port with notebook dir '$notebookDir'..."
+Write-Output "Starting JupyterLab on port $Port with notebook dir '$notebookDir'..."
 jupyter lab --port $Port --notebook-dir $notebookDir
