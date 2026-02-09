@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 function Show-BbsHeader {
     param (
@@ -32,9 +32,7 @@ $packages = @(
     "seaborn",
     "scikit-learn",
     "ipykernel",
-    "python-dotenv",
-    "pre-commit",
-    "nbstripout"
+    "python-dotenv"
 )
 
 # Add Miniconda to PATH if not already present
@@ -90,7 +88,7 @@ conda install -y @packages
 Write-Information "Packages installed/updated (idempotent)."
 
 Write-Information "Registering Jupyter kernel 'MAXLAB'..."
-python -m ipykernel install --user --name $envName --display-name "MAXLAB"
+python -m ipykernel install --user --name $envName --display-name "MAXLAB" --force
 Write-Information "Jupyter kernel registered (idempotent)."
 
 Write-Information "Setup complete. You can now run './start.ps1' to launch JupyterLab."

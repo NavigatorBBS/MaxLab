@@ -1,8 +1,15 @@
-# 📦 MaxLab - JupyterLab Local Environment
+# 🤖 MaxLab - AI-Powered JupyterLab Environment
 
 [![Linting](https://github.com/NavigatorBBS/maxlab/workflows/Linting/badge.svg)](https://github.com/NavigatorBBS/maxlab/actions/workflows/lint.yml)
 
-**MaxLab** is a lightweight, local Python data science environment using JupyterLab and Miniconda. It runs on your machine and serves notebooks from the workspace folder. Example notebooks like [workspace/welcome.ipynb](workspace/welcome.ipynb) are included for immediate use.
+**MaxLab** is a local Python data science environment with built-in AI chat capabilities powered by Azure OpenAI or OpenAI. It combines JupyterLab with Semantic Kernel to provide an intelligent assistant that analyzes code, offers insights, and helps with financial data tasks—all running on your machine.
+
+**Features:**
+- 🤖 **Integrated AI Chat Agent** - Ask questions, analyze code, get suggestions using Azure OpenAI or OpenAI
+- 💬 **Markdown Responses** - Responses auto-display as formatted markdown in notebooks
+- 📊 **Financial Analysis Plugins** - Transaction categorization and financial insights
+- 📓 **Pre-configured JupyterLab** - Ready-to-use data science environment with pandas, numpy, matplotlib, and more
+- 🧹 **Automatic Output Cleaning** - Pre-commit hooks keep your repository clean
 
 ---
 
@@ -102,7 +109,81 @@ jupyter lab --port $env:JUPYTER_PORT --notebook-dir $env:JUPYTER_NOTEBOOK_DIR
 **Note:** If environment variables are not set, JupyterLab uses its defaults.
 
 ---
+## 🤖 MaxLab AI Chat Agent
 
+MaxLab includes an AI-powered chat agent built with [Semantic Kernel](https://github.com/microsoft/semantic-kernel) that can analyze notebooks, provide code suggestions, and offer financial insights.
+
+### Setup
+
+Configure either **Azure OpenAI** or **OpenAI** by adding credentials to your `.env` file:
+
+**For Azure OpenAI:**
+```env
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_OPENAI_API_KEY=your-azure-api-key
+AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
+AZURE_OPENAI_API_VERSION=2024-02-15-preview
+```
+
+**For OpenAI:**
+```env
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_CHAT_MODEL_ID=gpt-4o  # Optional, defaults to gpt-4o
+```
+
+### Usage
+
+Load the MaxLab extension in any notebook:
+
+```python
+%load_ext maxlab
+```
+
+This automatically:
+- Detects your OpenAI configuration from environment variables
+- Initializes the chat agent
+- Registers built-in plugins (notebook_analyzer, finance)
+- Makes the `agent` available in your notebook
+
+### Chat with the Agent
+
+The agent returns responses that auto-display as formatted Markdown:
+
+```python
+# Simple usage - response auto-displays as markdown
+response = await agent.chat("Analyze this pandas code for efficiency")
+response
+```
+
+You can also explicitly display responses:
+
+```python
+response = await agent.chat("How can I categorize financial transactions?")
+display(Markdown(response))
+```
+
+For plain text responses without markdown formatting:
+
+```python
+plain_text = await agent.chat("Your question", as_markdown=False)
+```
+
+### Available Plugins
+
+The agent comes with two built-in plugins:
+
+1. **notebook_analyzer** - Analyzes Python code, suggests improvements, and provides best practices
+2. **finance** - Helps with financial data analysis and transaction categorization
+
+### Example Questions
+
+Try asking the agent:
+- "How can I optimize this pandas DataFrame operation?"
+- "What's the best way to categorize expense transactions?"
+- "Suggest improvements for this data visualization code"
+- "How do I handle missing values in financial data?"
+
+---
 ## � Git Pre-commit Hooks
 
 This repository uses [pre-commit](https://pre-commit.com/) with [nbstripout](https://github.com/kynan/nbstripout) to automatically clear Jupyter notebook outputs before committing. This keeps your git history clean and prevents accidentally committing large outputs, execution counts, or sensitive data.
@@ -166,3 +247,4 @@ The `workspace/` folder contains example notebooks that are built into the stati
 Notebooks persist between sessions on disk in the workspace folder.
 
 ---
+
