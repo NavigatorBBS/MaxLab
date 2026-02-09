@@ -23,10 +23,23 @@ https://www.anaconda.com/docs/getting-started/miniconda/main
 
 ### Setup
 
-**Option 1: Run the setup script**
+**Option 1: Run the setup script (all steps)**
 
 ```powershell
 ./setup.ps1
+```
+
+List available steps or run a subset:
+
+```powershell
+./setup.ps1 -ListSteps
+./setup.ps1 -Steps envfile,conda,env,packages,pip,kernel,precommit,nbstripout
+```
+
+You can also run individual steps directly from the scripts folder.
+
+```powershell
+./scripts/setup-pip.ps1
 ```
 
 **Option 1b: Start JupyterLab (recommended)**
@@ -53,6 +66,9 @@ conda activate maxlab
 # Install dependencies
 conda install jupyterlab pandas numpy scipy matplotlib seaborn scikit-learn ipykernel python-dotenv
 
+# Install project dependencies (dev + openai extras)
+python -m pip install -e ".[dev,openai]"
+
 # Create Jupyter kernel
 python -m ipykernel install --user --name maxlab --display-name "MAXLAB"
 
@@ -67,6 +83,8 @@ JupyterLab kernels can load environment variables from a root `.env` file using 
 
 ### Setup
 
+The setup script auto-creates `.env` from `.env.example` if missing. You can also copy it manually:
+
 1. Copy the `.env.example` template to `.env` at the repository root:
 
 ```powershell
@@ -80,6 +98,7 @@ JUPYTER_PORT=8888                  # Port to serve on
 JUPYTER_NOTEBOOK_DIR=workspace     # Notebooks directory
 DATA_DIR=workspace/data            # Data directory
 API_KEY=your_api_key_here          # Example secret
+```
 
 3. Load variables in a notebook:
 
@@ -92,7 +111,7 @@ load_dotenv()
 
 ### Running with Custom Configuration
 
-Set environment variables before running JupyterLab:
+`start.ps1` automatically loads `.env` and uses `JUPYTER_PORT` and `JUPYTER_NOTEBOOK_DIR` as defaults. You can also set environment variables before running JupyterLab:
 
 ```powershell
 # Activate conda environment
@@ -190,7 +209,7 @@ This repository uses [pre-commit](https://pre-commit.com/) with [nbstripout](htt
 
 ### Initial Setup
 
-After cloning the repository and running `setup.ps1`, install the pre-commit hook:
+After cloning the repository, `setup.ps1` installs the pre-commit hook. If you skipped that step, install it manually:
 
 ```powershell
 conda activate maxlab
