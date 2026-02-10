@@ -1,8 +1,36 @@
 ﻿param (
-    [int]$Port = 8888
+    [int]$Port
 )
 
 $ErrorActionPreference = "Stop"
+
+function Show-BigLogo {
+    $reset = "`e[0m"
+
+    $gold   = "`e[38;2;230;200;120m"
+    $yellow = "`e[38;2;220;230;180m"
+    $teal   = "`e[38;2;80;200;200m"
+
+    Write-Host "$gold███╗   ██╗ █████╗ ██╗   ██╗██╗ ██████╗  █████╗ ████████╗ ██████╗ ██████╗$reset"
+    Write-Host "$yellow████╗  ██║██╔══██╗██║   ██║██║██╔════╝ ██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗$reset"
+    Write-Host "$yellow██╔██╗ ██║███████║██║   ██║██║██║  ███╗███████║   ██║   ██║   ██║██████╔╝$reset"
+    Write-Host "$teal██║╚██╗██║██╔══██║╚██╗ ██╔╝██║██║   ██║██╔══██║   ██║   ██║   ██║██╔══██╗$reset"
+    Write-Host "$teal██║ ╚████║██║  ██║ ╚████╔╝ ██║╚██████╔╝██║  ██║   ██║   ╚██████╔╝██║  ██║$reset"
+    Write-Host "$teal╚═╝  ╚═══╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝$reset"
+
+    $reset = "`e[0m"
+    $teal  = "`e[38;2;80;200;200m"
+
+    Write-Host ""
+    Write-Host "$teal        ══▶   ██████╗ ██████╗ ███████╗   ◀══$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗██╔════╝$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████╗$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗╚════██║$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████║$reset"
+    Write-Host ""
+    Start-Sleep -Milliseconds 150
+    Write-Host "`e[2mNavigator BBS Environment Ready`e[0m"
+}
 
 function Show-BbsHeader {
     param (
@@ -22,11 +50,72 @@ function Show-BbsHeader {
     Write-Information $border
     Write-Information ""
 }
-Show-BbsHeader
+
+function Import-DotEnv {
+    param (
+        [string]$Path
+    )
+
+    Get-Content $Path | ForEach-Object {
+        $line = $_.Trim()
+        if (-not $line -or $line.StartsWith("#")) {
+            return
+        }
+
+        if ($line -match "^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$") {
+            $name = $matches[1]
+            $value = $matches[2].Trim()
+            if (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'"))) {
+                $value = $value.Substring(1, $value.Length - 2)
+            }
+
+            $existing = Get-Item -Path "Env:$name" -ErrorAction SilentlyContinue
+            if ($null -eq $existing -or [string]::IsNullOrWhiteSpace($existing.Value)) {
+                Set-Item -Path "Env:$name" -Value $value
+            }
+        }
+    }
+}
+
+Show-BigLogo
 Show-BbsHeader -Title "Starting JupyterLab in MaxLab Environment"
 
 $envName = "maxlab"
-$notebookDir = "workspace"
+$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$envPath = Join-Path $repoRoot ".env"
+$envExamplePath = Join-Path $repoRoot ".env.example"
+
+if (Test-Path $envPath) {
+    Import-DotEnv -Path $envPath
+} elseif (Test-Path $envExamplePath) {
+    Write-Information "No .env found. Run ./setup.ps1 or copy .env.example to .env for defaults."
+}
+
+$notebookDir = if ($env:JUPYTER_NOTEBOOK_DIR) { $env:JUPYTER_NOTEBOOK_DIR } else { "workspace" }
+$resolvedPort = $null
+
+if ($PSBoundParameters.ContainsKey("Port")) {
+    $resolvedPort = $Port
+} elseif ($env:JUPYTER_PORT) {
+    $parsed = 0
+    if ([int]::TryParse($env:JUPYTER_PORT, [ref]$parsed)) {
+        $resolvedPort = $parsed
+    } else {
+        Write-Warning "JUPYTER_PORT is not a valid integer. Falling back to 8888."
+        $resolvedPort = 8888
+    }
+} else {
+    $resolvedPort = 8888
+}
+
+if ([string]::IsNullOrWhiteSpace($notebookDir)) {
+    $notebookDir = "workspace"
+}
+
+$notebookDirPath = $notebookDir
+if (-not [System.IO.Path]::IsPathRooted($notebookDirPath)) {
+    $notebookDirPath = Join-Path $repoRoot $notebookDirPath
+}
 
 # Add Miniconda to PATH if not already present
 $minicondaPath = "$env:USERPROFILE\miniconda3"
@@ -42,7 +131,7 @@ if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
 }
 
 # Enable conda in the current PowerShell session
-$condaHook = conda "shell.powershell" "hook" 2>$null
+$condaHook = Invoke-Conda -Command "shell.powershell" -Arguments "hook" 2>$null
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
     Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
     exit 1
@@ -51,23 +140,23 @@ $condaHookString = $condaHook -join "`n"
 . ([scriptblock]::Create($condaHookString))
 
 # Check if notebook directory exists
-if (-not (Test-Path $notebookDir)) {
-    Write-Error "Notebook directory '$notebookDir' not found. Please run from the maxlab repository root."
+if (-not (Test-Path $notebookDirPath)) {
+    Write-Error "Notebook directory '$notebookDirPath' not found. Please run from the maxlab repository root."
     exit 1
 }
 
 Write-Information "Activating environment '$envName'..."
-conda activate $envName
+Invoke-Conda -Command "activate" -Arguments $envName
 
 # Check if port is already in use
 try {
-    $netstat = netstat -ano | Select-String ":$Port "
+    $netstat = netstat -ano | Select-String ":$resolvedPort "
     if ($netstat) {
-        Write-Warning "Port $Port is already in use. You can specify a different port: ./start.ps1 -Port 9000"
+        Write-Warning "Port $resolvedPort is already in use. You can specify a different port: ./start.ps1 -Port 9000"
     }
 } catch {
     Write-Verbose "Port availability check failed: $_"
 }
 
-Write-Information "Starting JupyterLab on port $Port with notebook dir '$notebookDir'..."
-jupyter lab --port $Port --notebook-dir $notebookDir
+Write-Information "Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'..."
+jupyter lab --port $resolvedPort --notebook-dir $notebookDirPath

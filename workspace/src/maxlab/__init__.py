@@ -8,7 +8,7 @@ This package provides:
 """
 
 __version__ = "0.1.0"
-__author__ = "Chris"
+__author__ = "Christopher Landry"
 
 from maxlab.chatbot_agent import NotebookChatAgent, MarkdownResponse
 from maxlab.jupyter_extension import load_ipython_extension, unload_ipython_extension

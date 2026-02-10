@@ -23,42 +23,34 @@ https://www.anaconda.com/docs/getting-started/miniconda/main
 
 ### Setup
 
-**Option 1: Run the setup script**
+**Run the setup script (all steps)**
 
 ```powershell
 ./setup.ps1
 ```
 
-**Option 1b: Start JupyterLab (recommended)**
+List available steps or run a subset:
+
+```powershell
+./setup.ps1 -ListSteps
+```
+
+**Important:** Miniconda3 must be installed manually first before running the setup scripts.
+
+Install Miniconda3 by following the official instructions:
+https://www.anaconda.com/docs/getting-started/miniconda/main
+
+After installation, restart your terminal to ensure `conda` is available on your PATH.
+You can also run individual steps directly from the scripts folder.
+
+```powershell
+./scripts/setup-pip.ps1
+```
+
+**Start JupyterLab (recommended)**
 
 ```powershell
 ./start.ps1
-```
-
-**Option 2: Manual steps**
-
-```powershell
-# Clone repository
-git clone https://github.com/NavigatorBBS/maxlab.git
-cd maxlab
-
-# Configure conda-forge
-conda config --add channels conda-forge
-conda config --set channel_priority strict
-
-# Create and activate environment
-conda create -n maxlab python=3.12
-conda activate maxlab
-
-# Install dependencies
-conda install jupyterlab pandas numpy scipy matplotlib seaborn scikit-learn ipykernel python-dotenv
-
-# Create Jupyter kernel
-python -m ipykernel install --user --name maxlab --display-name "MAXLAB"
-
-# Launch JupyterLab in the workspace folder
-cd workspace
-jupyter lab
 ```
 
 ## ⚙️ Configuration
@@ -66,6 +58,8 @@ jupyter lab
 JupyterLab kernels can load environment variables from a root `.env` file using python-dotenv. A template configuration file is provided:
 
 ### Setup
+
+The setup script auto-creates `.env` from `.env.example` if missing. You can also copy it manually:
 
 1. Copy the `.env.example` template to `.env` at the repository root:
 
@@ -80,6 +74,7 @@ JUPYTER_PORT=8888                  # Port to serve on
 JUPYTER_NOTEBOOK_DIR=workspace     # Notebooks directory
 DATA_DIR=workspace/data            # Data directory
 API_KEY=your_api_key_here          # Example secret
+```
 
 3. Load variables in a notebook:
 
@@ -88,11 +83,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 ```
-```
 
 ### Running with Custom Configuration
 
-Set environment variables before running JupyterLab:
+`start.ps1` automatically loads `.env` and uses `JUPYTER_PORT` and `JUPYTER_NOTEBOOK_DIR` as defaults. You can also set environment variables before running JupyterLab:
 
 ```powershell
 # Activate conda environment
@@ -108,7 +102,97 @@ jupyter lab --port $env:JUPYTER_PORT --notebook-dir $env:JUPYTER_NOTEBOOK_DIR
 
 **Note:** If environment variables are not set, JupyterLab uses its defaults.
 
+## 🤖 MaxLab AI Chat Agent
+## 💻 GitHub Copilot CLI
+
+The setup script automatically installs Node.js and GitHub Copilot CLI. After installation, you must configure authentication manually.
+
+### Configure GitHub Copilot CLI
+
+After `setup.ps1` completes, authenticate with GitHub:
+
+```powershell
+copilot auth login
+```
+
+This will open a browser window to authenticate with your GitHub account. Follow the prompts to grant access to GitHub Copilot.
+
+### Verify Installation
+
+```powershell
+copilot --version
+copilot chat --help
+```
+
+### Usage
+
+Once authenticated, you can use GitHub Copilot CLI from PowerShell:
+
+```powershell
+# Ask a general question
+copilot explain "what is a lambda function in python"
+
+# Start an interactive chat session
+copilot chat
+```
+
+For more details, visit: https://github.com/github/copilot-cli
+
 ---
+
+## 🧩 MaxBot JupyterLab Extension (Copilot prototype)
+
+MaxLab includes a lightweight MaxBot prototype that demonstrates how to integrate a Copilot-style client into Jupyter notebooks and the JupyterLab UI. This section explains how to enable and use the extension, and points to example notebooks and the Copilot guide.
+
+### What it provides
+
+- A local `CopilotClient` prototype for testing integration (workspace/src/maxbot/chatbot_agent.py)
+- A small server/extension pattern and magics for sending messages from notebooks to a local endpoint
+- Notebook-friendly session manager and chat UI bridge utilities (maxlab.chat_ui_bridge)
+
+### Load the extension in a notebook
+
+The MaxBot extension exposes magics and utilities for notebook usage. To try it in a notebook:
+
+```python
+# Load the MaxLab core extension (this also sets up agent integration)
+%load_ext maxlab
+
+# Initialize the local Copilot prototype client
+from maxbot.chatbot_agent import CopilotClient
+client = CopilotClient(token=os.getenv('MAXLAB_COPILOT_TOKEN'))
+print(client.chat('Hello from notebook'))
+```
+
+### Optional: initialize the comm target for UI integration
+
+For the JupyterLab chat sidebar integration, register the comm target in the kernel session:
+
+```python
+from maxlab.chat_ui_bridge import init_comm_target
+init_comm_target()
+```
+
+This registers a comm target named `maxlab_chat` and enables frontend <-> kernel messaging for the chat UI.
+
+### Example notebooks
+
+- `workspace/notebooks/ai/copilot_example.ipynb` — runnable examples showing the Copilot prototype and async manager usage
+- Other AI notebooks in `workspace/notebooks/ai/` demonstrate chat and server interactions
+
+### Authentication & secrets
+
+- Use the `MAXLAB_COPILOT_TOKEN` environment variable to store a personal token for local development; `.env.example` includes a placeholder
+- Never hardcode tokens in notebooks or commit real secrets to the repo
+- For production or shared servers, prefer server-side secrets or a vault to avoid exposing tokens to client-side notebooks
+
+### Security notes
+
+- The prototype stores chat history under `.maxlab/chat_history.json`; avoid storing sensitive content and consider redaction before saving
+- The extension demo is for local development only; do not expose to public networks without proper authentication and firewalling
+
+---
+
 ## 🤖 MaxLab AI Chat Agent
 
 MaxLab includes an AI-powered chat agent built with [Semantic Kernel](https://github.com/microsoft/semantic-kernel) that can analyze notebooks, provide code suggestions, and offer financial insights.
@@ -190,7 +274,7 @@ This repository uses [pre-commit](https://pre-commit.com/) with [nbstripout](htt
 
 ### Initial Setup
 
-After cloning the repository and running `setup.ps1`, install the pre-commit hook:
+After cloning the repository, `setup.ps1` installs the pre-commit hook. If you skipped that step, install it manually:
 
 ```powershell
 conda activate maxlab

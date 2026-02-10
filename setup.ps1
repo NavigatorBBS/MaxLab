@@ -1,4 +1,37 @@
-﻿$ErrorActionPreference = "Stop"
+﻿param (
+    [string[]]$Steps,
+    [switch]$ListSteps
+)
+
+$ErrorActionPreference = "Stop"
+
+function Show-BigLogo {
+    $reset = "`e[0m"
+
+    $gold   = "`e[38;2;230;200;120m"
+    $yellow = "`e[38;2;220;230;180m"
+    $teal   = "`e[38;2;80;200;200m"
+
+    Write-Host "$gold███╗   ██╗ █████╗ ██╗   ██╗██╗ ██████╗  █████╗ ████████╗ ██████╗ ██████╗$reset"
+    Write-Host "$yellow████╗  ██║██╔══██╗██║   ██║██║██╔════╝ ██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗$reset"
+    Write-Host "$yellow██╔██╗ ██║███████║██║   ██║██║██║  ███╗███████║   ██║   ██║   ██║██████╔╝$reset"
+    Write-Host "$teal██║╚██╗██║██╔══██║╚██╗ ██╔╝██║██║   ██║██╔══██║   ██║   ██║   ██║██╔══██╗$reset"
+    Write-Host "$teal██║ ╚████║██║  ██║ ╚████╔╝ ██║╚██████╔╝██║  ██║   ██║   ╚██████╔╝██║  ██║$reset"
+    Write-Host "$teal╚═╝  ╚═══╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝$reset"
+
+    $reset = "`e[0m"
+    $teal  = "`e[38;2;80;200;200m"
+
+    Write-Host ""
+    Write-Host "$teal        ══▶   ██████╗ ██████╗ ███████╗   ◀══$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗██╔════╝$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████╗$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗╚════██║$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████║$reset"
+    Write-Host ""
+    Start-Sleep -Milliseconds 150
+    Write-Host "`e[2mNavigator BBS Environment Ready`e[0m"
+}
 
 function Show-BbsHeader {
     param (
@@ -12,83 +45,62 @@ function Show-BbsHeader {
     $spaces  = " " * $padding
     $line    = "|$spaces$Title$spaces|"
 
-    Write-Information ""
-    Write-Information $border
-    Write-Information $line
-    Write-Information $border
-    Write-Information ""
+    Write-Output ""
+    Write-Output $border
+    Write-Output $line
+    Write-Output $border
+    Write-Output ""
 }
-Show-BbsHeader
+
+Show-BigLogo
 Show-BbsHeader -Title "Setting up MaxLab Environment"
 
-$envName = "maxlab"
-$pythonVersion = "3.12"
-$packages = @(
-    "jupyterlab",
-    "pandas",
-    "numpy",
-    "scipy",
-    "matplotlib",
-    "seaborn",
-    "scikit-learn",
-    "ipykernel",
-    "python-dotenv"
-)
+$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptsDir = Join-Path $repoRoot "scripts"
 
-# Add Miniconda to PATH if not already present
-$minicondaPath = "$env:USERPROFILE\miniconda3"
-$minicondaScriptsPath = "$minicondaPath\Scripts"
-if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
-    $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Information "Added Miniconda to PATH: $minicondaPath"
+$availableSteps = [ordered]@{
+    "envfile" = @{ Script = "setup-envfile.ps1"; Description = "Create .env from .env.example if missing" }
+    "conda" = @{ Script = "setup-conda.ps1"; Description = "Configure conda-forge channel" }
+    "nodejs" = @{ Script = "setup-nodejs.ps1"; Description = "Install Node.js via winget" }
+    "copilot-cli" = @{ Script = "setup-copilot-cli.ps1"; Description = "Install GitHub Copilot CLI via npm" }
+    "env" = @{ Script = "setup-env.ps1"; Description = "Create the maxlab conda environment" }
+    "packages" = @{ Script = "setup-packages.ps1"; Description = "Install conda packages" }
+    "pip" = @{ Script = "setup-pip.ps1"; Description = "Install project dependencies (dev + openai extras)" }
+    "kernel" = @{ Script = "setup-kernel.ps1"; Description = "Register Jupyter kernel" }
+    "precommit" = @{ Script = "setup-precommit.ps1"; Description = "Install pre-commit hooks" }
+    "nbstripout" = @{ Script = "setup-nbstripout.ps1"; Description = "Configure nbstripout" }
 }
 
-if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
-    Write-Error "Conda is not available in this session. Install Miniconda and ensure conda is on PATH."
-    exit 1
+if ($ListSteps) {
+    Write-Output "Available setup steps:"
+    foreach ($step in $availableSteps.Keys) {
+        $desc = $availableSteps[$step].Description
+        Write-Output "- $($step): $desc"
+    }
+    exit 0
 }
 
-# Enable conda in the current PowerShell session
-$condaHook = conda "shell.powershell" "hook" 2>$null
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
-    Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
-    exit 1
-}
-$condaHookString = $condaHook -join "`n"
-. ([scriptblock]::Create($condaHookString))
-
-Write-Information "Configuring conda-forge channel..."
-conda config --add channels conda-forge 2>$null
-conda config --set channel_priority strict 2>$null
-Write-Information "Conda-forge channel configured (idempotent)."
-
-Write-Information "Checking for existing environment '$envName'..."
-$envExists = $false
-try {
-    $envs = conda env list --json | ConvertFrom-Json
-    $envExists = $null -ne ($envs.envs | Where-Object { $_ -match "[\\/]${envName}$" })
-} catch {
-    Write-Error "Error checking conda environments: $_"
-    $envExists = $false
+if (-not $Steps -or $Steps.Count -eq 0) {
+    $Steps = $availableSteps.Keys
 }
 
-if (-not $envExists) {
-    Write-Information "Creating environment '$envName' with Python $pythonVersion..."
-    conda create -y -n $envName "python=$pythonVersion"
-    Write-Information "Environment '$envName' created successfully."
-} else {
-    Write-Information "Environment '$envName' already exists. Skipping creation (idempotent)."
+$Steps = $Steps | ForEach-Object { $_.ToLowerInvariant() }
+
+foreach ($step in $Steps) {
+    if (-not $availableSteps.Contains($step)) {
+        Write-Error "Unknown step '$step'. Run ./setup.ps1 -ListSteps for valid options."
+        exit 1
+    }
+
+    $scriptName = $availableSteps[$step].Script
+    $scriptPath = Join-Path $scriptsDir $scriptName
+    if (-not (Test-Path $scriptPath)) {
+        Write-Error "Missing script for step '$step' at $scriptPath."
+        exit 1
+    }
+
+    Write-Output "Running step '$step'..."
+    & $scriptPath
 }
 
-Write-Information "Activating environment '$envName'..."
-conda activate $envName
-
-Write-Information "Installing/updating packages..."
-conda install -y @packages
-Write-Information "Packages installed/updated (idempotent)."
-
-Write-Information "Registering Jupyter kernel 'MAXLAB'..."
-python -m ipykernel install --user --name $envName --display-name "MAXLAB" --force
-Write-Information "Jupyter kernel registered (idempotent)."
-
-Write-Information "Setup complete. You can now run './start.ps1' to launch JupyterLab."
+Write-Output "Setup complete. You can now run './start.ps1' to launch JupyterLab."
