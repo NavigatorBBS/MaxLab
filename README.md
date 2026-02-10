@@ -23,7 +23,7 @@ https://www.anaconda.com/docs/getting-started/miniconda/main
 
 ### Setup
 
-**Option 1: Run the setup script (all steps)**
+**Run the setup script (all steps)**
 
 ```powershell
 ./setup.ps1
@@ -45,39 +45,10 @@ You can also run individual steps directly from the scripts folder.
 ./scripts/setup-pip.ps1
 ```
 
-**Option 1b: Start JupyterLab (recommended)**
+**Start JupyterLab (recommended)**
 
 ```powershell
 ./start.ps1
-```
-
-**Option 2: Manual steps**
-
-```powershell
-# Clone repository
-git clone https://github.com/NavigatorBBS/maxlab.git
-cd maxlab
-
-# Configure conda-forge
-conda config --add channels conda-forge
-conda config --set channel_priority strict
-
-# Create and activate environment
-conda create -n maxlab python=3.12
-conda activate maxlab
-
-# Install dependencies
-conda install jupyterlab pandas numpy scipy matplotlib seaborn scikit-learn ipykernel python-dotenv
-
-# Install project dependencies (dev + openai extras)
-python -m pip install -e ".[dev,openai]"
-
-# Create Jupyter kernel
-python -m ipykernel install --user --name maxlab --display-name "MAXLAB"
-
-# Launch JupyterLab in the workspace folder
-cd workspace
-jupyter lab
 ```
 
 ## ⚙️ Configuration
@@ -109,7 +80,6 @@ API_KEY=your_api_key_here          # Example secret
 from dotenv import load_dotenv
 
 load_dotenv()
-```
 ```
 
 ### Running with Custom Configuration
