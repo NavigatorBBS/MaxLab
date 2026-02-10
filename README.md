@@ -33,6 +33,8 @@ List available steps or run a subset:
 
 ```powershell
 ./setup.ps1 -ListSteps
+```
+
 **Important:** Miniconda3 must be installed manually first before running the setup scripts.
 
 Install Miniconda3 by following the official instructions:
