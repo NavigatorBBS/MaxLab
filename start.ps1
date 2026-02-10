@@ -131,7 +131,7 @@ if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
 }
 
 # Enable conda in the current PowerShell session
-$condaHook = conda "shell.powershell" "hook" 2>$null
+$condaHook = Invoke-Conda -Command "shell.powershell" -Arguments "hook" 2>$null
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
     Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
     exit 1
@@ -146,7 +146,7 @@ if (-not (Test-Path $notebookDirPath)) {
 }
 
 Write-Information "Activating environment '$envName'..."
-conda activate $envName
+Invoke-Conda -Command "activate" -Arguments $envName
 
 # Check if port is already in use
 try {

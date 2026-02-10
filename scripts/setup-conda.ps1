@@ -3,6 +3,6 @@
 Show-BbsHeader -Title "MaxLab Setup - Conda Config"
 
 Add-MinicondaToPath
-Ensure-CondaAvailable
+Test-CondaAvailable
 Enable-CondaInSession
-Ensure-CondaChannel
+Set-CondaChannel

@@ -6,6 +6,6 @@ $envName = "maxlab"
 $pythonVersion = "3.12"
 
 Add-MinicondaToPath
-Ensure-CondaAvailable
+Test-CondaAvailable
 Enable-CondaInSession
-Ensure-CondaEnv -EnvName $envName -PythonVersion $pythonVersion
+New-CondaEnvironment -EnvName $envName -PythonVersion $pythonVersion

@@ -46,7 +46,21 @@ function Add-MinicondaToPath {
     }
 }
 
-function Ensure-CondaAvailable {
+function Invoke-Conda {
+    param(
+        [Parameter(ValueFromRemainingArguments=$true)]
+        [object[]]$Args
+    )
+    try {
+        $cmd = (Get-Command conda -ErrorAction Stop).Source
+    } catch {
+        Write-Error "Conda executable not found. Ensure conda is on PATH."
+        exit 1
+    }
+    & $cmd @Args
+}
+
+function Test-CondaAvailable {
     if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
         Write-Error "Conda is not available in this session. Install Miniconda and ensure conda is on PATH."
         exit 1
@@ -54,7 +68,7 @@ function Ensure-CondaAvailable {
 }
 
 function Enable-CondaInSession {
-    $condaHook = conda "shell.powershell" "hook" 2>$null
+    $condaHook = Invoke-Conda "shell.powershell" "hook" 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
         Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
         exit 1
@@ -63,21 +77,23 @@ function Enable-CondaInSession {
     . ([scriptblock]::Create($condaHookString))
 }
 
-function Ensure-CondaChannel {
+function Set-CondaChannel {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
     Write-Information "Configuring conda-forge channel..."
-    conda config --add channels conda-forge 2>$null
-    conda config --set channel_priority strict 2>$null
+    if ($PSCmdlet.ShouldProcess('conda','Add conda-forge channel')) { Invoke-Conda -Command 'config' -Arguments '--add', 'channels', 'conda-forge' 2>$null }
+    if ($PSCmdlet.ShouldProcess('conda','Set channel priority to strict')) { Invoke-Conda -Command 'config' -Arguments '--set', 'channel_priority', 'strict' 2>$null }
     Write-Information "Conda-forge channel configured (idempotent)."
 }
 
-function Test-CondaEnvExists {
+function Test-CondaEnvironment {
     param (
         [string]$EnvName
     )
 
     $envExists = $false
     try {
-        $envs = conda env list --json | ConvertFrom-Json
+        $envs = Invoke-Conda -Command 'env' -Arguments 'list', '--json' | ConvertFrom-Json
         $envExists = $null -ne ($envs.envs | Where-Object { $_ -match "[\\/]${EnvName}$" })
     } catch {
         Write-Error "Error checking conda environments: $_"
@@ -86,29 +102,30 @@ function Test-CondaEnvExists {
     return $envExists
 }
 
-function Ensure-CondaEnv {
+function New-CondaEnvironment {
+    [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [string]$EnvName,
         [string]$PythonVersion
     )
 
     Write-Information "Checking for existing environment '$EnvName'..."
-    $envExists = Test-CondaEnvExists -EnvName $EnvName
+    $envExists = Test-CondaEnvironment -EnvName $EnvName
 
     if (-not $envExists) {
         Write-Information "Creating environment '$EnvName' with Python $PythonVersion..."
-        conda create -y -n $EnvName "python=$PythonVersion"
+        if ($PSCmdlet.ShouldProcess("conda","Create environment $EnvName")) { Invoke-Conda create -y -n $EnvName "python=$PythonVersion" }
         Write-Information "Environment '$EnvName' created successfully."
     } else {
         Write-Information "Environment '$EnvName' already exists. Skipping creation (idempotent)."
     }
 }
 
-function Activate-CondaEnv {
+function Enter-CondaEnv {
     param (
         [string]$EnvName
     )
 
     Write-Information "Activating environment '$EnvName'..."
-    conda activate $EnvName
+    Invoke-Conda activate $EnvName
 }

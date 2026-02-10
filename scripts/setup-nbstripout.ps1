@@ -12,9 +12,9 @@ if (-not (Test-Path $gitPath)) {
 }
 
 Add-MinicondaToPath
-Ensure-CondaAvailable
+Test-CondaAvailable
 Enable-CondaInSession
-Activate-CondaEnv -EnvName $envName
+Enter-CondaEnv -EnvName $envName
 
 Push-Location $repoRoot
 try {

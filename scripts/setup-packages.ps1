@@ -16,10 +16,10 @@ $packages = @(
 )
 
 Add-MinicondaToPath
-Ensure-CondaAvailable
+Test-CondaAvailable
 Enable-CondaInSession
-Activate-CondaEnv -EnvName $envName
+Enter-CondaEnv -EnvName $envName
 
 Write-Information "Installing/updating packages..."
-conda install -y @packages
+Invoke-Conda install -y @packages
 Write-Information "Packages installed/updated (idempotent)."
