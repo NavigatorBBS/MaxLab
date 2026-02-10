@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Chris", email = "chris@example.com"}
+    {name = "Christopher Landry", email = "sysop@navigatorbbs.net"}
 ]
 
 dependencies = [
@@ -33,9 +33,12 @@ dev = [
 openai = [
     "semantic-kernel[openai]>=1.39.0",
 ]
+copilot = [
+    "github-copilot-sdk",
+]
 
 [tool.setuptools]
-packages = ["maxlab"]
+packages = ["maxlab", "maxbot"]
 
 [tool.setuptools.package-dir]
 "" = "workspace/src"

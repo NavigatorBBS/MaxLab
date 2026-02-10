@@ -4,6 +4,34 @@
 
 $ErrorActionPreference = "Stop"
 
+function Show-BigLogo {
+    $reset = "`e[0m"
+
+    $gold   = "`e[38;2;230;200;120m"
+    $yellow = "`e[38;2;220;230;180m"
+    $teal   = "`e[38;2;80;200;200m"
+
+    Write-Host "$gold███╗   ██╗ █████╗ ██╗   ██╗██╗ ██████╗  █████╗ ████████╗ ██████╗ ██████╗$reset"
+    Write-Host "$yellow████╗  ██║██╔══██╗██║   ██║██║██╔════╝ ██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗$reset"
+    Write-Host "$yellow██╔██╗ ██║███████║██║   ██║██║██║  ███╗███████║   ██║   ██║   ██║██████╔╝$reset"
+    Write-Host "$teal██║╚██╗██║██╔══██║╚██╗ ██╔╝██║██║   ██║██╔══██║   ██║   ██║   ██║██╔══██╗$reset"
+    Write-Host "$teal██║ ╚████║██║  ██║ ╚████╔╝ ██║╚██████╔╝██║  ██║   ██║   ╚██████╔╝██║  ██║$reset"
+    Write-Host "$teal╚═╝  ╚═══╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝$reset"
+
+    $reset = "`e[0m"
+    $teal  = "`e[38;2;80;200;200m"
+
+    Write-Host ""
+    Write-Host "$teal        ══▶   ██████╗ ██████╗ ███████╗   ◀══$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗██╔════╝$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████╗$reset"
+    Write-Host "$teal              ██╔══██╗██╔══██╗╚════██║$reset"
+    Write-Host "$teal              ██████╔╝██████╔╝███████║$reset"
+    Write-Host ""
+    Start-Sleep -Milliseconds 150
+    Write-Host "`e[2mNavigator BBS Environment Ready`e[0m"
+}
+
 function Show-BbsHeader {
     param (
         [string]$Title = "NavigatorBBS MaxLab Startup"
@@ -49,7 +77,7 @@ function Import-DotEnv {
     }
 }
 
-Show-BbsHeader
+Show-BigLogo
 Show-BbsHeader -Title "Starting JupyterLab in MaxLab Environment"
 
 $envName = "maxlab"

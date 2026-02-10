@@ -167,6 +167,60 @@ copilot chat
 For more details, visit: https://github.com/github/copilot-cli
 
 ---
+
+## 🧩 MaxBot JupyterLab Extension (Copilot prototype)
+
+MaxLab includes a lightweight MaxBot prototype that demonstrates how to integrate a Copilot-style client into Jupyter notebooks and the JupyterLab UI. This section explains how to enable and use the extension, and points to example notebooks and the Copilot guide.
+
+### What it provides
+
+- A local `CopilotClient` prototype for testing integration (workspace/src/maxbot/chatbot_agent.py)
+- A small server/extension pattern and magics for sending messages from notebooks to a local endpoint
+- Notebook-friendly session manager and chat UI bridge utilities (maxlab.chat_ui_bridge)
+
+### Load the extension in a notebook
+
+The MaxBot extension exposes magics and utilities for notebook usage. To try it in a notebook:
+
+```python
+# Load the MaxLab core extension (this also sets up agent integration)
+%load_ext maxlab
+
+# Initialize the local Copilot prototype client
+from maxbot.chatbot_agent import CopilotClient
+client = CopilotClient(token=os.getenv('MAXLAB_COPILOT_TOKEN'))
+print(client.chat('Hello from notebook'))
+```
+
+### Optional: initialize the comm target for UI integration
+
+For the JupyterLab chat sidebar integration, register the comm target in the kernel session:
+
+```python
+from maxlab.chat_ui_bridge import init_comm_target
+init_comm_target()
+```
+
+This registers a comm target named `maxlab_chat` and enables frontend <-> kernel messaging for the chat UI.
+
+### Example notebooks
+
+- `workspace/notebooks/ai/copilot_example.ipynb` — runnable examples showing the Copilot prototype and async manager usage
+- Other AI notebooks in `workspace/notebooks/ai/` demonstrate chat and server interactions
+
+### Authentication & secrets
+
+- Use the `MAXLAB_COPILOT_TOKEN` environment variable to store a personal token for local development; `.env.example` includes a placeholder
+- Never hardcode tokens in notebooks or commit real secrets to the repo
+- For production or shared servers, prefer server-side secrets or a vault to avoid exposing tokens to client-side notebooks
+
+### Security notes
+
+- The prototype stores chat history under `.maxlab/chat_history.json`; avoid storing sensitive content and consider redaction before saving
+- The extension demo is for local development only; do not expose to public networks without proper authentication and firewalling
+
+---
+
 ## 🤖 MaxLab AI Chat Agent
 
 MaxLab includes an AI-powered chat agent built with [Semantic Kernel](https://github.com/microsoft/semantic-kernel) that can analyze notebooks, provide code suggestions, and offer financial insights.

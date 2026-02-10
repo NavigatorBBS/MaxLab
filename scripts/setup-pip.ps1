@@ -18,8 +18,8 @@ Activate-CondaEnv -EnvName $envName
 
 Push-Location $repoRoot
 try {
-    Write-Information "Installing project dependencies (dev + openai extras)..."
-    python -m pip install -e ".[dev,openai]"
+    Write-Information "Installing project dependencies (dev + openai + copilot extras)..."
+    python -m pip install -e ".[dev,openai,copilot]"
     Write-Information "Pip dependencies installed/updated (idempotent)."
 } finally {
     Pop-Location
