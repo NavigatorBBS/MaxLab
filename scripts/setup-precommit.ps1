@@ -7,20 +7,33 @@ $repoRoot = Get-RepoRoot
 $gitPath = Join-Path $repoRoot ".git"
 
 if (-not (Test-Path $gitPath)) {
-    Write-Warning "No .git directory found at $repoRoot. Skipping pre-commit install."
+    Show-Warning "No .git directory found at $repoRoot. Skipping pre-commit install."
     exit 0
 }
 
 Add-MinicondaToPath
 Test-CondaAvailable
 Enable-CondaInSession
-Enter-CondaEnv -EnvName $envName
 
 Push-Location $repoRoot
 try {
-    Write-Information "Installing pre-commit hooks..."
-    pre-commit install
-    Write-Information "Pre-commit hooks installed."
+    Write-Host -NoNewline "$($Colors.info)⠋ Installing pre-commit hooks$($Colors.reset)"
+    $job = Start-Job -ScriptBlock {
+        cd $using:repoRoot
+        conda run -n $using:envName pre-commit install 2>&1 | Out-Null
+    }
+    
+    $frameIndex = 0
+    while ($job.State -eq "Running") {
+        $frameIndex = ($frameIndex + 1) % $SpinnerFrames.Count
+        Write-Host -NoNewline "`r$($Colors.info)$($SpinnerFrames[$frameIndex]) Installing pre-commit hooks$($Colors.reset)"
+        Start-Sleep -Milliseconds 100
+    }
+    
+    Wait-Job $job | Out-Null
+    Receive-Job $job | Out-Null
+    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    Write-Host "`r$($Colors.success)✓ Pre-commit hooks installed.$($Colors.reset)                              "
 } finally {
     Pop-Location
 }

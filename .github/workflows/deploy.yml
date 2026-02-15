@@ -1,0 +1,218 @@
+name: Deploy MaxLab
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+        type: string
+
+jobs:
+  # Validation jobs run on Ubuntu in parallel
+  powershell-lint:
+    name: PowerShell Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          $scriptFiles = @(Get-ChildItem -Path . -Include *.ps1 -Recurse -Exclude .github | Select-Object -ExpandProperty FullName)
+          if ($scriptFiles.Count -gt 0) {
+            $allResults = @()
+            foreach ($file in $scriptFiles) {
+              $results = Invoke-ScriptAnalyzer -Path $file -Severity Warning
+              if ($results) {
+                $allResults += $results
+              }
+            }
+            if ($allResults) {
+              Write-Error "PSScriptAnalyzer found issues:`n$($allResults | Format-List | Out-String)"
+              exit 1
+            }
+          }
+
+  python-lint:
+    name: Python Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8
+        run: |
+          # Lint Python files in src and workspace directories
+          flake8 src/ workspace/ --count --select=E9,F63,F7,F82 --show-source --statistics || exit 0
+          flake8 src/ workspace/ --count --exit-code=1 --max-line-length=120 --statistics
+
+  notebook-outputs:
+    name: Check Notebook Outputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install nbstripout
+        run: |
+          python -m pip install --upgrade pip
+          pip install nbstripout
+
+      - name: Check notebook outputs
+        run: |
+          # Check that notebooks have no outputs (would be modified by nbstripout)
+          nbstripout --dry-run workspace/notebooks/*.ipynb
+
+  # Deployment job runs on self-hosted Windows runner AFTER all validation passes
+  deploy:
+    name: Deploy to Windows Server
+    needs: [powershell-lint, python-lint, notebook-outputs]
+    runs-on: [self-hosted, windows-server]
+    environment:
+      name: production
+      url: file://D:/apps/MaxLab
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'main' }}
+
+      - name: Validate deployment directory
+        shell: pwsh
+        run: |
+          $deployPath = "D:\apps\MaxLab"
+          Write-Output "Checking deployment target: $deployPath"
+          
+          if (-not (Test-Path $deployPath)) {
+            Write-Output "Directory does not exist. It will be created during clone."
+          } else {
+            Write-Output "✓ Deployment directory exists"
+          }
+
+      - name: Clone or update repository
+        shell: pwsh
+        run: |
+          $deployPath = "D:\apps\MaxLab"
+          $branch = "${{ github.event.inputs.branch || 'main' }}"
+          
+          if (-not (Test-Path $deployPath)) {
+            # Clone the repository
+            Write-Output "Cloning repository to $deployPath"
+            git clone --branch $branch https://github.com/${{ github.repository }}.git $deployPath
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to clone repository"
+              exit 1
+            }
+            Write-Output "✓ Repository cloned successfully"
+          } else {
+            # Update existing repository
+            Write-Output "Updating existing repository at $deployPath"
+            cd $deployPath
+            
+            # Ensure we're on the correct branch
+            git fetch origin $branch
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to fetch from origin"
+              exit 1
+            }
+            
+            # Pull with rebase to get latest changes
+            git checkout $branch
+            git pull --rebase origin $branch
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to pull repository updates"
+              exit 1
+            }
+            Write-Output "✓ Repository updated successfully"
+          }
+
+      - name: Verify deployment
+        shell: pwsh
+        run: |
+          $deployPath = "D:\apps\MaxLab"
+          $requiredFiles = @(
+            "setup.ps1",
+            "start.ps1",
+            "scripts/common.ps1"
+          )
+          
+          Write-Output "Verifying critical files..."
+          foreach ($file in $requiredFiles) {
+            $fullPath = Join-Path $deployPath $file
+            if (-not (Test-Path $fullPath)) {
+              Write-Error "Missing critical file: $file"
+              exit 1
+            }
+            Write-Output "✓ $file exists"
+          }
+
+      - name: Get deployment info
+        id: deploy-info
+        shell: pwsh
+        run: |
+          $deployPath = "D:\apps\MaxLab"
+          cd $deployPath
+          
+          $commitHash = git rev-parse --short HEAD
+          $commitMessage = git log -1 --pretty=%B
+          $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          $branch = "${{ github.event.inputs.branch || 'main' }}"
+          
+          echo "commit_hash=$commitHash" >> $env:GITHUB_OUTPUT
+          echo "commit_message=$($commitMessage.Trim())" >> $env:GITHUB_OUTPUT
+          echo "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
+          echo "branch=$branch" >> $env:GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        shell: pwsh
+        run: |
+          $summary = @(
+            "## ✓ Deployment Successful"
+            ""
+            "**Deployment Details:**"
+            "- **Target**: D:\apps\MaxLab"
+            "- **Branch**: ${{ steps.deploy-info.outputs.branch }}"
+            "- **Commit**: ${{ steps.deploy-info.outputs.commit_hash }}"
+            "- **Message**: ${{ steps.deploy-info.outputs.commit_message }}"
+            "- **Time**: ${{ steps.deploy-info.outputs.timestamp }}"
+            ""
+            "**Next Steps:**"
+            "- SSH into your Windows server"
+            "- Navigate to D:\apps\MaxLab"
+            "- Run: `./setup.ps1` (if needed)"
+            "- Run: `./start.ps1` to launch JupyterLab"
+          ) -join "`n"
+          
+          Write-Output $summary
+          
+          # Also write to GitHub Actions summary
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+
+      - name: Deployment notification
+        if: success()
+        shell: pwsh
+        run: |
+          Write-Output "✓ Deployment completed successfully!"
+          Write-Output "MaxLab is now available at: D:\apps\MaxLab"
+          Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
+          Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"

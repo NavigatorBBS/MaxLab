@@ -61,11 +61,8 @@ $scriptsDir = Join-Path $repoRoot "scripts"
 $availableSteps = [ordered]@{
     "envfile" = @{ Script = "setup-envfile.ps1"; Description = "Create .env from .env.example if missing" }
     "conda" = @{ Script = "setup-conda.ps1"; Description = "Configure conda-forge channel" }
-    "nodejs" = @{ Script = "setup-nodejs.ps1"; Description = "Install Node.js via winget" }
-    "copilot-cli" = @{ Script = "setup-copilot-cli.ps1"; Description = "Install GitHub Copilot CLI via npm" }
     "env" = @{ Script = "setup-env.ps1"; Description = "Create the maxlab conda environment" }
     "packages" = @{ Script = "setup-packages.ps1"; Description = "Install conda packages" }
-    "pip" = @{ Script = "setup-pip.ps1"; Description = "Install project dependencies (dev + openai extras)" }
     "kernel" = @{ Script = "setup-kernel.ps1"; Description = "Register Jupyter kernel" }
     "precommit" = @{ Script = "setup-precommit.ps1"; Description = "Install pre-commit hooks" }
     "nbstripout" = @{ Script = "setup-nbstripout.ps1"; Description = "Configure nbstripout" }
@@ -75,7 +72,7 @@ if ($ListSteps) {
     Write-Output "Available setup steps:"
     foreach ($step in $availableSteps.Keys) {
         $desc = $availableSteps[$step].Description
-        Write-Output "- $($step): $desc"
+        Write-Output "  $($teal)▸ $step$($reset): $desc"
     }
     exit 0
 }
@@ -85,6 +82,10 @@ if (-not $Steps -or $Steps.Count -eq 0) {
 }
 
 $Steps = $Steps | ForEach-Object { $_.ToLowerInvariant() }
+
+$teal = "`e[38;2;80;200;200m"
+$reset = "`e[0m"
+$green = "`e[38;2;76;175;80m"
 
 foreach ($step in $Steps) {
     if (-not $availableSteps.Contains($step)) {
@@ -99,8 +100,9 @@ foreach ($step in $Steps) {
         exit 1
     }
 
-    Write-Output "Running step '$step'..."
+    Write-Output "$($teal)→ Running step '$step'...$($reset)"
     & $scriptPath
 }
 
-Write-Output "Setup complete. You can now run './start.ps1' to launch JupyterLab."
+Write-Output ""
+Write-Output "$($green)✓ Setup complete. You can now run './start.ps1' to launch JupyterLab.$($reset)"

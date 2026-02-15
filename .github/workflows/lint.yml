@@ -24,7 +24,7 @@ jobs:
           if ($scriptFiles.Count -gt 0) {
             $allResults = @()
             foreach ($file in $scriptFiles) {
-              $results = Invoke-ScriptAnalyzer -Path $file -Severity Warning
+              $results = Invoke-ScriptAnalyzer -Path $file -Settings ./.github/PSScriptAnalyzerSettings.psd1
               if ($results) {
                 $allResults += $results
               }
