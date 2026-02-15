@@ -72,7 +72,7 @@ if ($ListSteps) {
     Write-Output "Available setup steps:"
     foreach ($step in $availableSteps.Keys) {
         $desc = $availableSteps[$step].Description
-        Write-Output "- $($step): $desc"
+        Write-Output "  $($teal)▸ $step$($reset): $desc"
     }
     exit 0
 }
@@ -82,6 +82,10 @@ if (-not $Steps -or $Steps.Count -eq 0) {
 }
 
 $Steps = $Steps | ForEach-Object { $_.ToLowerInvariant() }
+
+$teal = "`e[38;2;80;200;200m"
+$reset = "`e[0m"
+$green = "`e[38;2;76;175;80m"
 
 foreach ($step in $Steps) {
     if (-not $availableSteps.Contains($step)) {
@@ -96,8 +100,9 @@ foreach ($step in $Steps) {
         exit 1
     }
 
-    Write-Output "Running step '$step'..."
+    Write-Output "$($teal)→ Running step '$step'...$($reset)"
     & $scriptPath
 }
 
-Write-Output "Setup complete. You can now run './start.ps1' to launch JupyterLab."
+Write-Output ""
+Write-Output "$($green)✓ Setup complete. You can now run './start.ps1' to launch JupyterLab.$($reset)"

@@ -1,5 +1,79 @@
 $ErrorActionPreference = "Stop"
 
+# Color constants for terminal output
+$script:Colors = @{
+    success    = "`e[38;2;76;175;80m"     # Green
+    error      = "`e[38;2;244;67;54m"     # Red
+    warning    = "`e[38;2;255;152;0m"     # Orange/Yellow
+    info       = "`e[38;2;33;150;243m"    # Blue
+    accent     = "`e[38;2;80;200;200m"    # Teal
+    gold       = "`e[38;2;230;200;120m"   # Gold
+    reset      = "`e[0m"
+    dim        = "`e[2m"
+}
+
+# Spinner animation frames
+$script:SpinnerFrames = @("⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏")
+$script:SpinnerIndex = 0
+
+function Show-Spinner {
+    param(
+        [string]$Message,
+        [scriptblock]$ScriptBlock = $null,
+        [int]$Timeout = 300
+    )
+    
+    if ($null -eq $ScriptBlock) {
+        Write-Output "$($script:Colors.info)→ $Message$($script:Colors.reset)"
+        return
+    }
+    
+    Write-Host -NoNewline "$($script:Colors.info)$($script:SpinnerFrames[0]) $Message$($script:Colors.reset)" -ForegroundColor Blue
+    
+    $job = Start-Job -ScriptBlock $ScriptBlock
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $frameIndex = 0
+    
+    while ($job.State -eq "Running") {
+        if ($stopwatch.Elapsed.TotalSeconds -gt $Timeout) {
+            Stop-Job $job -ErrorAction SilentlyContinue
+            Write-Host "`r$($script:Colors.warning)⏱ Timeout - took too long$($script:Colors.reset)                              "
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
+            return $null
+        }
+        
+        Start-Sleep -Milliseconds 100
+        $frameIndex = ($frameIndex + 1) % $script:SpinnerFrames.Count
+        Write-Host -NoNewline "`r$($script:Colors.info)$($script:SpinnerFrames[$frameIndex]) $Message$($script:Colors.reset)" -ForegroundColor Blue
+    }
+    
+    # Job completed
+    $result = Receive-Job $job
+    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    Write-Host "`r$($script:Colors.success)✓ $Message$($script:Colors.reset)                              "
+    return $result
+}
+
+function Show-Success {
+    param([string]$Message)
+    Write-Output "$($script:Colors.success)✓ $Message$($script:Colors.reset)"
+}
+
+function Show-Warning {
+    param([string]$Message)
+    Write-Output "$($script:Colors.warning)⚠ $Message$($script:Colors.reset)"
+}
+
+function Show-Error {
+    param([string]$Message)
+    Write-Output "$($script:Colors.error)✗ $Message$($script:Colors.reset)"
+}
+
+function Show-Step {
+    param([string]$Message)
+    Write-Output "$($script:Colors.accent)→ $Message$($script:Colors.reset)"
+}
+
 function Show-BbsHeader {
     param (
         [string]$Title
@@ -13,9 +87,9 @@ function Show-BbsHeader {
     $line = "|$spaces$Title$spaces|"
 
     Write-Output ""
-    Write-Output $border
-    Write-Output $line
-    Write-Output $border
+    Write-Output "$($script:Colors.accent)$border$($script:Colors.reset)"
+    Write-Output "$($script:Colors.accent)$line$($script:Colors.reset)"
+    Write-Output "$($script:Colors.accent)$border$($script:Colors.reset)"
     Write-Output ""
 }
 
@@ -68,7 +142,7 @@ function Test-CondaAvailable {
 }
 
 function Enable-CondaInSession {
-    Write-Output "Initializing conda for PowerShell session..."
+    Show-Step "Initializing conda for PowerShell session..."
     try {
         # Get conda root - use CONDA_ROOT if available, otherwise derive from CONDA_EXE or use default
         $condaRoot = $env:CONDA_ROOT
@@ -80,26 +154,38 @@ function Enable-CondaInSession {
             $condaRoot = "$env:USERPROFILE\miniconda3"
         }
         
-        Write-Output "Conda root: $condaRoot"
+        Write-Output "  $($script:Colors.info)Conda root: $condaRoot$($script:Colors.reset)"
         if ($condaRoot -and (Test-Path $condaRoot)) {
             $modulePath = Join-Path $condaRoot "shell\condabin\Conda.psm1"
             if (Test-Path $modulePath) {
-                Write-Output "Loading Conda PowerShell module from $modulePath..."
+                Write-Output "  $($script:Colors.info)→ Loading Conda PowerShell module...$($script:Colors.reset)"
                 Import-Module $modulePath -ErrorAction SilentlyContinue
             }
         }
-        Write-Output "Conda initialized successfully."
+        Show-Success "Conda initialized successfully."
     } catch {
-        Write-Error "Failed to initialize conda for PowerShell: $_`nEnsure 'conda init powershell' has been run."
+        Show-Error "Failed to initialize conda for PowerShell: $_"
+        Write-Output "  $($script:Colors.warning)Ensure 'conda init powershell' has been run.$($script:Colors.reset)"
         exit 1
     }
 }
 
 function Set-CondaChannel {
-    Write-Output "Configuring conda-forge channel..."
+    Show-Step "Configuring conda-forge channel..."
+    Write-Host -NoNewline "$($script:Colors.info)⠋ Setting conda-forge channel$($script:Colors.reset)"
+    
     # Run in background with timeout as a workaround for hanging issue
     $job1 = Start-Job -ScriptBlock { conda config --add channels conda-forge 2>$null }
     $job2 = Start-Job -ScriptBlock { conda config --set channel_priority strict 2>$null }
+    
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $frameIndex = 0
+    
+    while (($job1.State -eq "Running" -or $job2.State -eq "Running") -and $stopwatch.Elapsed.TotalSeconds -lt 30) {
+        $frameIndex = ($frameIndex + 1) % $script:SpinnerFrames.Count
+        Write-Host -NoNewline "`r$($script:Colors.info)$($script:SpinnerFrames[$frameIndex]) Setting conda-forge channel$($script:Colors.reset)"
+        Start-Sleep -Milliseconds 100
+    }
     
     Wait-Job $job1 -Timeout 10 | Out-Null
     Wait-Job $job2 -Timeout 10 | Out-Null
@@ -107,7 +193,7 @@ function Set-CondaChannel {
     Remove-Job $job1 -Force -ErrorAction SilentlyContinue
     Remove-Job $job2 -Force -ErrorAction SilentlyContinue
     
-    Write-Output "Conda-forge channel configured (idempotent)."
+    Write-Host "`r$($script:Colors.success)✓ Conda-forge channel configured (idempotent).$($script:Colors.reset)                              "
 }
 
 function Test-CondaEnvironment {
@@ -125,7 +211,7 @@ function Test-CondaEnvironment {
         
         $envExists = $null -ne ($envOutput | Where-Object { $_ -match "[\\/]${EnvName}(\s|$)" })
     } catch {
-        Write-Output "Error checking conda environments: $_"
+        Show-Warning "Error checking conda environments: $_"
         $envExists = $false
     }
     return $envExists
@@ -137,22 +223,32 @@ function New-CondaEnvironment {
         [string]$PythonVersion
     )
 
-    Write-Output "Checking for existing environment '$EnvName'..."
+    Show-Step "Checking for existing environment '$EnvName'..."
     $envExists = Test-CondaEnvironment -EnvName $EnvName
 
     if (-not $envExists) {
-        Write-Output "Creating environment '$EnvName' with Python $PythonVersion..."
+        Write-Host -NoNewline "$($script:Colors.info)⠋ Creating environment '$EnvName' with Python $PythonVersion (this may take a few minutes)$($script:Colors.reset)"
+        
         # Use background job to avoid hanging on conda create
         $job = Start-Job -ScriptBlock {
             conda create -y -n $using:EnvName "python=$using:PythonVersion" 2>&1 | Out-Null
         }
-        Write-Output "This may take a few minutes..."
+        
+        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+        $frameIndex = 0
+        
+        while ($job.State -eq "Running" -and $stopwatch.Elapsed.TotalSeconds -lt 600) {
+            $frameIndex = ($frameIndex + 1) % $script:SpinnerFrames.Count
+            Write-Host -NoNewline "`r$($script:Colors.info)$($script:SpinnerFrames[$frameIndex]) Creating environment '$EnvName' with Python $PythonVersion (this may take a few minutes)$($script:Colors.reset)"
+            Start-Sleep -Milliseconds 100
+        }
+        
         Wait-Job $job | Out-Null
         $jobResult = Receive-Job $job
         Remove-Job $job -Force -ErrorAction SilentlyContinue
-        Write-Output "Environment '$EnvName' created successfully."
+        Write-Host "`r$($script:Colors.success)✓ Environment '$EnvName' created successfully.$($script:Colors.reset)                              "
     } else {
-        Write-Output "Environment '$EnvName' already exists. Skipping creation (idempotent)."
+        Show-Success "Environment '$EnvName' already exists. Skipping creation (idempotent)."
     }
 }
 

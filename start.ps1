@@ -130,7 +130,18 @@ if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Define colors for start.ps1
+$colors = @{
+    success    = "`e[38;2;76;175;80m"     # Green
+    error      = "`e[38;2;244;67;54m"     # Red
+    warning    = "`e[38;2;255;152;0m"     # Orange/Yellow
+    info       = "`e[38;2;33;150;243m"    # Blue
+    accent     = "`e[38;2;80;200;200m"    # Teal
+    reset      = "`e[0m"
+}
+
 # Enable conda in the current PowerShell session
+Write-Output "$($colors.info)→ Initializing conda for PowerShell session...$($colors.reset)"
 $condaRoot = $env:CONDA_ROOT
 if (-not $condaRoot -and $env:CONDA_EXE) {
     $condaRoot = Split-Path -Parent (Split-Path -Parent $env:CONDA_EXE)
@@ -142,32 +153,38 @@ if (-not $condaRoot) {
 $modulePath = Join-Path $condaRoot "shell\condabin\Conda.psm1"
 if (Test-Path $modulePath) {
     Import-Module $modulePath -ErrorAction SilentlyContinue
+    Write-Output "$($colors.success)✓ Conda initialized successfully.$($colors.reset)"
 } else {
-    Write-Error "Failed to initialize conda for PowerShell. Conda module not found at $modulePath"
+    Write-Output "$($colors.error)✗ Failed to initialize conda for PowerShell.$($colors.reset)"
+    Write-Output "  Conda module not found at $modulePath"
     exit 1
 }
 
 # Check if notebook directory exists
 if (-not (Test-Path $notebookDirPath)) {
-    Write-Error "Notebook directory '$notebookDirPath' not found. Please run from the maxlab repository root."
+    Write-Output "$($colors.error)✗ Notebook directory not found.$($colors.reset)"
+    Write-Output "  '$notebookDirPath' does not exist. Please run from the maxlab repository root."
     exit 1
 }
 
-Write-Output "Activating environment '$envName'..."
+Write-Output "$($colors.info)→ Activating environment '$envName'...$($colors.reset)"
 # Set conda environment variables to activate the environment
 $env:CONDA_PREFIX = Join-Path $minicondaPath "envs" $envName
 $env:CONDA_DEFAULT_ENV = $envName
 $env:PATH = "$(Join-Path $env:CONDA_PREFIX 'Scripts');$(Join-Path $env:CONDA_PREFIX 'Library\mingw-w64\bin');$(Join-Path $env:CONDA_PREFIX 'Library\usr\bin');$(Join-Path $env:CONDA_PREFIX 'Library\bin');$env:PATH"
+Write-Output "$($colors.success)✓ Environment activated.$($colors.reset)"
 
 # Check if port is already in use
 try {
     $netstat = netstat -ano | Select-String ":$resolvedPort "
     if ($netstat) {
-        Write-Warning "Port $resolvedPort is already in use. You can specify a different port: ./start.ps1 -Port 9000"
+        Write-Output "$($colors.warning)⚠ Port $resolvedPort is already in use.$($colors.reset)"
+        Write-Output "  You can specify a different port: ./start.ps1 -Port 9000"
     }
 } catch {
     Write-Verbose "Port availability check failed: $_"
 }
 
-Write-Output "Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'..."
+Write-Output ""
+Write-Output "$($colors.info)→ Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'...$($colors.reset)"
 jupyter lab --port $resolvedPort --notebook-dir $notebookDirPath

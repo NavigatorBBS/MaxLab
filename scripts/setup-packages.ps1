@@ -21,12 +21,21 @@ Add-MinicondaToPath
 Test-CondaAvailable
 Enable-CondaInSession
 
-Write-Output "Installing/updating packages in '$envName' environment..."
-# Use conda run to execute install in the target environment without activation
+Write-Host -NoNewline "$($Colors.info)⠋ Installing/updating packages in '$envName' environment (this may take a few minutes)$($Colors.reset)"
 $job = Start-Job -ScriptBlock {
     conda run -n $using:envName conda install -y $using:packages 2>&1 | Out-Null
 }
+
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$frameIndex = 0
+
+while ($job.State -eq "Running" -and $stopwatch.Elapsed.TotalSeconds -lt 600) {
+    $frameIndex = ($frameIndex + 1) % $SpinnerFrames.Count
+    Write-Host -NoNewline "`r$($Colors.info)$($SpinnerFrames[$frameIndex]) Installing/updating packages in '$envName' environment (this may take a few minutes)$($Colors.reset)"
+    Start-Sleep -Milliseconds 100
+}
+
 Wait-Job $job | Out-Null
-Receive-Job $job
+Receive-Job $job | Out-Null
 Remove-Job $job -Force -ErrorAction SilentlyContinue
-Write-Output "Packages installed/updated (idempotent)."
+Write-Host "`r$($Colors.success)✓ Packages installed/updated (idempotent).$($Colors.reset)                              "
