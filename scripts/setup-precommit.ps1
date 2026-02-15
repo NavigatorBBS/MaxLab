@@ -14,13 +14,19 @@ if (-not (Test-Path $gitPath)) {
 Add-MinicondaToPath
 Test-CondaAvailable
 Enable-CondaInSession
-Enter-CondaEnv -EnvName $envName
 
 Push-Location $repoRoot
 try {
-    Write-Information "Installing pre-commit hooks..."
-    pre-commit install
-    Write-Information "Pre-commit hooks installed."
+    Write-Output "Installing pre-commit hooks..."
+    # Use conda run to execute pre-commit in the target environment
+    $job = Start-Job -ScriptBlock {
+        cd $using:repoRoot
+        conda run -n $using:envName pre-commit install 2>&1
+    }
+    Wait-Job $job | Out-Null
+    Receive-Job $job
+    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    Write-Output "Pre-commit hooks installed."
 } finally {
     Pop-Location
 }

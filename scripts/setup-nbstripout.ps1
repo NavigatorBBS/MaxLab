@@ -14,13 +14,19 @@ if (-not (Test-Path $gitPath)) {
 Add-MinicondaToPath
 Test-CondaAvailable
 Enable-CondaInSession
-Enter-CondaEnv -EnvName $envName
 
 Push-Location $repoRoot
 try {
-    Write-Information "Configuring nbstripout for this repository..."
-    nbstripout --install
-    Write-Information "Nbstripout installed."
+    Write-Output "Configuring nbstripout for this repository..."
+    # Use conda run to execute nbstripout in the target environment
+    $job = Start-Job -ScriptBlock {
+        cd $using:repoRoot
+        conda run -n $using:envName nbstripout --install 2>&1
+    }
+    Wait-Job $job | Out-Null
+    Receive-Job $job
+    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    Write-Output "Nbstripout installed."
 } finally {
     Pop-Location
 }

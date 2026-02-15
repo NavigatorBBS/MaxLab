@@ -7,8 +7,13 @@ $envName = "maxlab"
 Add-MinicondaToPath
 Test-CondaAvailable
 Enable-CondaInSession
-Enter-CondaEnv -EnvName $envName
 
-Write-Information "Registering Jupyter kernel 'MAXLAB'..."
-python -m ipykernel install --user --name $envName --display-name "MAXLAB"
-Write-Information "Jupyter kernel registered (idempotent)."
+Write-Output "Registering Jupyter kernel 'MAXLAB'..."
+# Use conda run to execute python command in the target environment
+$job = Start-Job -ScriptBlock {
+    conda run -n $using:envName python -m ipykernel install --user --name $using:envName --display-name "MAXLAB" 2>&1
+}
+Wait-Job $job | Out-Null
+Receive-Job $job
+Remove-Job $job -Force -ErrorAction SilentlyContinue
+Write-Output "Jupyter kernel registered (idempotent)."

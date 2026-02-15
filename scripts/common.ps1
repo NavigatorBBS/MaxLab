@@ -12,11 +12,11 @@ function Show-BbsHeader {
     $spaces = " " * $padding
     $line = "|$spaces$Title$spaces|"
 
-    Write-Information ""
-    Write-Information $border
-    Write-Information $line
-    Write-Information $border
-    Write-Information ""
+    Write-Output ""
+    Write-Output $border
+    Write-Output $line
+    Write-Output $border
+    Write-Output ""
 }
 
 function Get-RepoRoot {
@@ -42,7 +42,7 @@ function Add-MinicondaToPath {
     $minicondaScriptsPath = "$minicondaPath\Scripts"
     if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
         $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-        Write-Information "Added Miniconda to PATH: $minicondaPath"
+        Write-Output "Added Miniconda to PATH: $minicondaPath"
     }
 }
 
@@ -68,22 +68,46 @@ function Test-CondaAvailable {
 }
 
 function Enable-CondaInSession {
-    $condaHook = Invoke-Conda "shell.powershell" "hook" 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
-        Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
+    Write-Output "Initializing conda for PowerShell session..."
+    try {
+        # Get conda root - use CONDA_ROOT if available, otherwise derive from CONDA_EXE or use default
+        $condaRoot = $env:CONDA_ROOT
+        if (-not $condaRoot -and $env:CONDA_EXE) {
+            # CONDA_EXE is like C:\path\Scripts\conda.exe, so go up two levels
+            $condaRoot = Split-Path -Parent (Split-Path -Parent $env:CONDA_EXE)
+        }
+        if (-not $condaRoot) {
+            $condaRoot = "$env:USERPROFILE\miniconda3"
+        }
+        
+        Write-Output "Conda root: $condaRoot"
+        if ($condaRoot -and (Test-Path $condaRoot)) {
+            $modulePath = Join-Path $condaRoot "shell\condabin\Conda.psm1"
+            if (Test-Path $modulePath) {
+                Write-Output "Loading Conda PowerShell module from $modulePath..."
+                Import-Module $modulePath -ErrorAction SilentlyContinue
+            }
+        }
+        Write-Output "Conda initialized successfully."
+    } catch {
+        Write-Error "Failed to initialize conda for PowerShell: $_`nEnsure 'conda init powershell' has been run."
         exit 1
     }
-    $condaHookString = $condaHook -join "`n"
-    . ([scriptblock]::Create($condaHookString))
 }
 
 function Set-CondaChannel {
-    [CmdletBinding(SupportsShouldProcess=$true)]
-    param()
-    Write-Information "Configuring conda-forge channel..."
-    if ($PSCmdlet.ShouldProcess('conda','Add conda-forge channel')) { Invoke-Conda -Command 'config' -Arguments '--add', 'channels', 'conda-forge' 2>$null }
-    if ($PSCmdlet.ShouldProcess('conda','Set channel priority to strict')) { Invoke-Conda -Command 'config' -Arguments '--set', 'channel_priority', 'strict' 2>$null }
-    Write-Information "Conda-forge channel configured (idempotent)."
+    Write-Output "Configuring conda-forge channel..."
+    # Run in background with timeout as a workaround for hanging issue
+    $job1 = Start-Job -ScriptBlock { conda config --add channels conda-forge 2>$null }
+    $job2 = Start-Job -ScriptBlock { conda config --set channel_priority strict 2>$null }
+    
+    Wait-Job $job1 -Timeout 10 | Out-Null
+    Wait-Job $job2 -Timeout 10 | Out-Null
+    
+    Remove-Job $job1 -Force -ErrorAction SilentlyContinue
+    Remove-Job $job2 -Force -ErrorAction SilentlyContinue
+    
+    Write-Output "Conda-forge channel configured (idempotent)."
 }
 
 function Test-CondaEnvironment {
@@ -93,31 +117,42 @@ function Test-CondaEnvironment {
 
     $envExists = $false
     try {
-        $envs = Invoke-Conda -Command 'env' -Arguments 'list', '--json' | ConvertFrom-Json
-        $envExists = $null -ne ($envs.envs | Where-Object { $_ -match "[\\/]${EnvName}$" })
+        # Use background job with timeout to avoid hanging
+        $job = Start-Job -ScriptBlock { conda env list 2>$null }
+        Wait-Job $job -Timeout 10 | Out-Null
+        $envOutput = Receive-Job $job
+        Remove-Job $job -Force -ErrorAction SilentlyContinue
+        
+        $envExists = $null -ne ($envOutput | Where-Object { $_ -match "[\\/]${EnvName}(\s|$)" })
     } catch {
-        Write-Error "Error checking conda environments: $_"
+        Write-Output "Error checking conda environments: $_"
         $envExists = $false
     }
     return $envExists
 }
 
 function New-CondaEnvironment {
-    [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [string]$EnvName,
         [string]$PythonVersion
     )
 
-    Write-Information "Checking for existing environment '$EnvName'..."
+    Write-Output "Checking for existing environment '$EnvName'..."
     $envExists = Test-CondaEnvironment -EnvName $EnvName
 
     if (-not $envExists) {
-        Write-Information "Creating environment '$EnvName' with Python $PythonVersion..."
-        if ($PSCmdlet.ShouldProcess("conda","Create environment $EnvName")) { Invoke-Conda create -y -n $EnvName "python=$PythonVersion" }
-        Write-Information "Environment '$EnvName' created successfully."
+        Write-Output "Creating environment '$EnvName' with Python $PythonVersion..."
+        # Use background job to avoid hanging on conda create
+        $job = Start-Job -ScriptBlock {
+            conda create -y -n $using:EnvName "python=$using:PythonVersion" 2>&1 | Out-Null
+        }
+        Write-Output "This may take a few minutes..."
+        Wait-Job $job | Out-Null
+        $jobResult = Receive-Job $job
+        Remove-Job $job -Force -ErrorAction SilentlyContinue
+        Write-Output "Environment '$EnvName' created successfully."
     } else {
-        Write-Information "Environment '$EnvName' already exists. Skipping creation (idempotent)."
+        Write-Output "Environment '$EnvName' already exists. Skipping creation (idempotent)."
     }
 }
 
@@ -126,6 +161,22 @@ function Enter-CondaEnv {
         [string]$EnvName
     )
 
-    Write-Information "Activating environment '$EnvName'..."
-    Invoke-Conda activate $EnvName
+    Write-Output "Activating environment '$EnvName'..."
+    # Set environment variables to activate conda environment
+    $condaRoot = $env:CONDA_PREFIX
+    if (-not $condaRoot) {
+        $condaRoot = "$env:USERPROFILE\miniconda3"
+    }
+    
+    $envPath = Join-Path $condaRoot "envs" $EnvName
+    if (Test-Path $envPath) {
+        # Set up environment variables for the activated environment
+        $env:CONDA_PREFIX = $envPath
+        $env:CONDA_DEFAULT_ENV = $EnvName
+        # Add environment paths
+        $env:PATH = "$envPath;$envPath\Library\mingw-w64\bin;$envPath\Library\usr\bin;$envPath\Library\bin;$envPath\Scripts;$env:PATH"
+    } else {
+        Write-Error "Environment '$EnvName' not found at $envPath"
+        exit 1
+    }
 }

@@ -1,4 +1,4 @@
-﻿param (
+param (
     [int]$Port
 )
 
@@ -44,11 +44,11 @@ function Show-BbsHeader {
     $spaces  = " " * $padding
     $line    = "|$spaces$Title$spaces|"
 
-    Write-Information ""
-    Write-Information $border
-    Write-Information $line
-    Write-Information $border
-    Write-Information ""
+    Write-Output ""
+    Write-Output $border
+    Write-Output $line
+    Write-Output $border
+    Write-Output ""
 }
 
 function Import-DotEnv {
@@ -88,7 +88,7 @@ $envExamplePath = Join-Path $repoRoot ".env.example"
 if (Test-Path $envPath) {
     Import-DotEnv -Path $envPath
 } elseif (Test-Path $envExamplePath) {
-    Write-Information "No .env found. Run ./setup.ps1 or copy .env.example to .env for defaults."
+    Write-Output "No .env found. Run ./setup.ps1 or copy .env.example to .env for defaults."
 }
 
 $notebookDir = if ($env:JUPYTER_NOTEBOOK_DIR) { $env:JUPYTER_NOTEBOOK_DIR } else { "workspace" }
@@ -122,7 +122,7 @@ $minicondaPath = "$env:USERPROFILE\miniconda3"
 $minicondaScriptsPath = "$minicondaPath\Scripts"
 if ((Test-Path $minicondaPath) -and ($env:PATH -notlike "*$minicondaScriptsPath*")) {
     $env:PATH = "$minicondaScriptsPath;$minicondaPath;$env:PATH"
-    Write-Information "Added Miniconda to PATH: $minicondaPath"
+    Write-Output "Added Miniconda to PATH: $minicondaPath"
 }
 
 if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
@@ -131,13 +131,21 @@ if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
 }
 
 # Enable conda in the current PowerShell session
-$condaHook = Invoke-Conda -Command "shell.powershell" -Arguments "hook" 2>$null
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($condaHook)) {
-    Write-Error "Failed to initialize conda for PowerShell. Run 'conda init powershell' and restart the terminal."
+$condaRoot = $env:CONDA_ROOT
+if (-not $condaRoot -and $env:CONDA_EXE) {
+    $condaRoot = Split-Path -Parent (Split-Path -Parent $env:CONDA_EXE)
+}
+if (-not $condaRoot) {
+    $condaRoot = "$env:USERPROFILE\miniconda3"
+}
+
+$modulePath = Join-Path $condaRoot "shell\condabin\Conda.psm1"
+if (Test-Path $modulePath) {
+    Import-Module $modulePath -ErrorAction SilentlyContinue
+} else {
+    Write-Error "Failed to initialize conda for PowerShell. Conda module not found at $modulePath"
     exit 1
 }
-$condaHookString = $condaHook -join "`n"
-. ([scriptblock]::Create($condaHookString))
 
 # Check if notebook directory exists
 if (-not (Test-Path $notebookDirPath)) {
@@ -145,8 +153,11 @@ if (-not (Test-Path $notebookDirPath)) {
     exit 1
 }
 
-Write-Information "Activating environment '$envName'..."
-Invoke-Conda -Command "activate" -Arguments $envName
+Write-Output "Activating environment '$envName'..."
+# Set conda environment variables to activate the environment
+$env:CONDA_PREFIX = Join-Path $minicondaPath "envs" $envName
+$env:CONDA_DEFAULT_ENV = $envName
+$env:PATH = "$(Join-Path $env:CONDA_PREFIX 'Scripts');$(Join-Path $env:CONDA_PREFIX 'Library\mingw-w64\bin');$(Join-Path $env:CONDA_PREFIX 'Library\usr\bin');$(Join-Path $env:CONDA_PREFIX 'Library\bin');$env:PATH"
 
 # Check if port is already in use
 try {
@@ -158,5 +169,5 @@ try {
     Write-Verbose "Port availability check failed: $_"
 }
 
-Write-Information "Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'..."
+Write-Output "Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'..."
 jupyter lab --port $resolvedPort --notebook-dir $notebookDirPath
