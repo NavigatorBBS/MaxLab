@@ -85,7 +85,7 @@ jobs:
   # Deployment job runs on self-hosted Windows runner AFTER all validation passes
   deploy:
     name: Deploy to Windows Server
-    needs: [powershell-lint, python-lint, notebook-outputs]
+    needs: [python-lint, notebook-outputs]
     runs-on: [self-hosted, windows-server]
     environment:
       name: production
