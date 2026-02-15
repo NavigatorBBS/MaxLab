@@ -187,4 +187,12 @@ try {
 
 Write-Output ""
 Write-Output "$($colors.info)→ Starting JupyterLab on port $resolvedPort with notebook dir '$notebookDirPath'...$($colors.reset)"
-jupyter lab --port $resolvedPort --notebook-dir $notebookDirPath
+jupyter lab `
+  --port $resolvedPort `
+  --notebook-dir $notebookDirPath `
+  --ServerApp.allow_remote_access=True `
+  --ServerApp.allow_origin="*" `
+  --ServerApp.trust_xheaders=True `
+  --ServerApp.token='' `
+  --ServerApp.password='' `
+  --ServerApp.base_url="/"
