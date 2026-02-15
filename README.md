@@ -102,6 +102,46 @@ jupyter lab --port $env:JUPYTER_PORT --notebook-dir $env:JUPYTER_NOTEBOOK_DIR
 
 **Note:** If environment variables are not set, JupyterLab uses its defaults.
 
+### Hosting on a Server via Tailscale
+
+You can securely expose MaxLab to your Tailnet (private network) using [Tailscale](https://tailscale.com/) without exposing it to the public internet.
+
+**Prerequisites:**
+- Tailscale installed and authenticated on your machine
+- MaxLab running locally (default: `http://127.0.0.1:8888`)
+
+**Setup:**
+
+1. Start MaxLab using `./start.ps1` or manually launch JupyterLab
+2. In another terminal, run:
+
+```powershell
+tailscale serve --service=svc:maxlab --https=443 127.0.0.1:8888
+```
+
+3. Access MaxLab securely within your Tailnet at:
+```
+https://maxlab.<your-tailnet-name>.ts.net/
+```
+
+**To stop hosting:**
+
+```powershell
+tailscale serve --service=svc:maxlab --https=443 off
+```
+
+**To remove the service configuration:**
+
+```powershell
+tailscale serve clear svc:maxlab
+```
+
+**Benefits:**
+- 🔒 Encrypted connection via Tailscale
+- 🌐 Access from any device on your Tailnet
+- 🚫 No exposure to the public internet
+- 📱 Works seamlessly with mobile devices and remote machines
+
 ---
 ## � Git Pre-commit Hooks
 
