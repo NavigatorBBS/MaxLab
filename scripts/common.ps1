@@ -244,7 +244,7 @@ function New-CondaEnvironment {
         }
         
         Wait-Job $job | Out-Null
-        $jobResult = Receive-Job $job
+        Receive-Job $job | Out-Null
         Remove-Job $job -Force -ErrorAction SilentlyContinue
         Write-Host "`r$($script:Colors.success)✓ Environment '$EnvName' created successfully.$($script:Colors.reset)                              "
     } else {

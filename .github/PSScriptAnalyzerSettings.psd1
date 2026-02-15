@@ -9,10 +9,18 @@
     ExcludeRules = @(
         # Write-Host is used for transient UI display messages in setup/start scripts
         # This is an acceptable use case and doesn't violate the intent of the rule
-        'PSAvoidUsingWriteHost'
-    )
+        'PSAvoidUsingWriteHost',
 
-    # Other commonly excluded rules can be added here as needed:
-    # 'PSUseShouldProcessForStateChangingFunctions' - for simple scripts that don't need -WhatIf
-    # 'PSAvoidGlobalVars' - if globals are necessary for your use case
+        # Set-CondaChannel and New-CondaEnvironment are internal utility functions,
+        # not user-facing cmdlets. They don't need -WhatIf/-Confirm support.
+        'PSUseShouldProcessForStateChangingFunctions',
+
+        # These are maintenance/setup scripts, not production code.
+        # Aliases like 'cd' are acceptable in internal scripts.
+        'PSAvoidUsingCmdletAliases',
+
+        # BOM encoding is a file metadata issue, not a functional problem.
+        # PowerShell handles UTF-8 without BOM perfectly fine.
+        'PSUseBOMForUnicodeEncodedFile'
+    )
 }
