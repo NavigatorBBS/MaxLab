@@ -1,8 +1,8 @@
 # 🤖 MaxLab - JupyterLab Environment
 
 [![Linting](https://github.com/NavigatorBBS/maxlab/workflows/Linting/badge.svg)](https://github.com/NavigatorBBS/maxlab/actions/workflows/lint.yml)
-
-**MaxLab** is a local Python data science environment
+ 
+**MaxLab** is a Python data science environment based on JupyterLab
 
 **Features:**
 - 🤖 **Integrated AI Chat Agent** - Ask questions, analyze code, get suggestions using **Sysop**
