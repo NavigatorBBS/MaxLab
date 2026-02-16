@@ -26,7 +26,8 @@ function Find-NSSM {
         $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
         if ($nssmExe) {
             Write-Status "Found NSSM in PATH: $($nssmExe.Source)" "success"
-            return $nssmExe.Source
+            $nssmExe.Source | Write-Output
+            return
         }
     } catch {
         # Continue to search
@@ -47,7 +48,8 @@ function Find-NSSM {
     foreach ($path in $searchPaths) {
         if (Test-Path $path) {
             Write-Status "Found NSSM at: $path" "success"
-            return $path
+            $path | Write-Output
+            return
         }
     }
 
@@ -64,7 +66,8 @@ function Find-NSSM {
         foreach ($path in $searchPaths) {
             if (Test-Path $path) {
                 Write-Status "NSSM installed successfully at: $path" "success"
-                return $path
+                $path | Write-Output
+                return
             }
         }
         
@@ -73,7 +76,8 @@ function Find-NSSM {
             $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
             if ($nssmExe) {
                 Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
-                return $nssmExe.Source
+                $nssmExe.Source | Write-Output
+                return
             }
         } catch {
             # Continue to error handling
@@ -97,7 +101,8 @@ function Find-NSSM {
         foreach ($path in $searchPaths) {
             if (Test-Path $path) {
                 Write-Status "NSSM installed successfully at: $path" "success"
-                return $path
+                $path | Write-Output
+                return
             }
         }
         
@@ -106,7 +111,8 @@ function Find-NSSM {
             $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
             if ($nssmExe) {
                 Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
-                return $nssmExe.Source
+                $nssmExe.Source | Write-Output
+                return
             }
         } catch {
             # Continue to error handling
