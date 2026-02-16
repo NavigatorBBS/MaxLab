@@ -1,10 +1,14 @@
 name: Deploy MaxLab
 
 on:
+  push:
+    branches:
+      - main
+      - test
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy'
+        description: 'Branch to deploy (main or test)'
         required: false
         default: 'main'
         type: string
@@ -56,25 +60,33 @@ jobs:
           # Check that notebooks have no outputs (would be modified by nbstripout)
           nbstripout --dry-run workspace/notebooks/*.ipynb
 
-  # Deployment job runs on self-hosted Windows runner AFTER all validation passes
-  deploy:
-    name: Deploy to Windows Server
+  # Deployment job for PRODUCTION (main branch)
+  deploy-production:
+    name: Deploy to Production
     needs: [python-lint, notebook-outputs]
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.branch == 'main' || github.event.inputs.branch == ''))
     runs-on: [self-hosted, windows-server]
     environment:
       name: production
       url: file://D:/apps/MaxLab
     
+    env:
+      DEPLOY_PATH: D:\apps\MaxLab
+      SERVICE_NAME: MaxLabJupyterLab
+      BRANCH: main
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || 'main' }}
+          ref: ${{ github.ref_type == 'branch' && github.ref_name || (github.event.inputs.branch || 'main') }}
 
       - name: Validate deployment directory
         shell: pwsh
         run: |
-          $deployPath = "D:\apps\MaxLab"
+          $deployPath = "${{ env.DEPLOY_PATH }}"
           Write-Output "Checking deployment target: $deployPath"
           
           if (-not (Test-Path $deployPath)) {
@@ -86,8 +98,8 @@ jobs:
       - name: Clone or update repository
         shell: pwsh
         run: |
-          $deployPath = "D:\apps\MaxLab"
-          $branch = "${{ github.event.inputs.branch || 'main' }}"
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $branch = "${{ env.BRANCH }}"
           
           if (-not (Test-Path $deployPath)) {
             # Clone the repository
@@ -123,7 +135,7 @@ jobs:
       - name: Verify deployment
         shell: pwsh
         run: |
-          $deployPath = "D:\apps\MaxLab"
+          $deployPath = "${{ env.DEPLOY_PATH }}"
           $requiredFiles = @(
             "setup.ps1",
             "start.ps1",
@@ -144,13 +156,13 @@ jobs:
         id: deploy-info
         shell: pwsh
         run: |
-          $deployPath = "D:\apps\MaxLab"
+          $deployPath = "${{ env.DEPLOY_PATH }}"
           cd $deployPath
           
           $commitHash = git rev-parse --short HEAD
           $commitMessage = git log -1 --pretty=%B
           $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-          $branch = "${{ github.event.inputs.branch || 'main' }}"
+          $branch = "${{ env.BRANCH }}"
           
           echo "commit_hash=$commitHash" >> $env:GITHUB_OUTPUT
           echo "commit_message=$($commitMessage.Trim())" >> $env:GITHUB_OUTPUT
@@ -164,7 +176,7 @@ jobs:
             "## ✓ Deployment Successful"
             ""
             "**Deployment Details:**"
-            "- **Target**: D:\apps\MaxLab"
+            "- **Target**: ${{ env.DEPLOY_PATH }}"
             "- **Branch**: ${{ steps.deploy-info.outputs.branch }}"
             "- **Commit**: ${{ steps.deploy-info.outputs.commit_hash }}"
             "- **Message**: ${{ steps.deploy-info.outputs.commit_message }}"
@@ -172,7 +184,7 @@ jobs:
             ""
             "**Next Steps:**"
             "- SSH into your Windows server"
-            "- Navigate to D:\apps\MaxLab"
+            "- Navigate to ${{ env.DEPLOY_PATH }}"
             "- Run: `./setup.ps1` (if needed)"
             "- Run: `./start.ps1` to launch JupyterLab"
           ) -join "`n"
@@ -186,11 +198,12 @@ jobs:
         id: nssm-setup
         shell: pwsh
         run: |
-          $deployPath = "D:\apps\MaxLab"
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $serviceName = "${{ env.SERVICE_NAME }}"
           $setupScript = Join-Path $deployPath "scripts\setup-nssm-service.ps1"
           
           Write-Output "Setting up NSSM service..."
-          & $setupScript -DeployPath $deployPath -ServiceName "MaxLabJupyterLab"
+          & $setupScript -DeployPath $deployPath -ServiceName $serviceName
           
           if ($LASTEXITCODE -eq 0) {
             echo "nssm_status=success" >> $env:GITHUB_OUTPUT
@@ -203,12 +216,179 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "✓ Deployment completed successfully!"
-          Write-Output "MaxLab is now available at: D:\apps\MaxLab"
+          Write-Output "MaxLab is now available at: ${{ env.DEPLOY_PATH }}"
           Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
           Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"
           Write-Output ""
           if ("${{ steps.nssm-setup.outputs.nssm_status }}" -eq "success") {
-            Write-Output "✓ JupyterLab service is running as MaxLabJupyterLab"
+            Write-Output "✓ JupyterLab service is running as ${{ env.SERVICE_NAME }}"
+            Write-Output "  Access: http://localhost:8888 (or via Tailscale)"
+          } else {
+            Write-Output "⚠ NSSM setup encountered issues. Check the logs above."
+          }
+
+  # Deployment job for TEST (test branch)
+  deploy-test:
+    name: Deploy to Test
+    needs: [python-lint, notebook-outputs]
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/test') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.branch == 'test')
+    runs-on: [self-hosted, windows-server]
+    environment:
+      name: test
+      url: file://D:/apps/MaxLabTest
+    
+    env:
+      DEPLOY_PATH: D:\apps\MaxLabTest
+      SERVICE_NAME: MaxLabJupyterLabTest
+      BRANCH: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: test
+
+      - name: Validate deployment directory
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          Write-Output "Checking deployment target: $deployPath"
+          
+          if (-not (Test-Path $deployPath)) {
+            Write-Output "Directory does not exist. It will be created during clone."
+          } else {
+            Write-Output "✓ Deployment directory exists"
+          }
+
+      - name: Clone or update repository
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $branch = "${{ env.BRANCH }}"
+          
+          if (-not (Test-Path $deployPath)) {
+            # Clone the repository
+            Write-Output "Cloning repository to $deployPath"
+            git clone --branch $branch https://github.com/${{ github.repository }}.git $deployPath
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to clone repository"
+              exit 1
+            }
+            Write-Output "✓ Repository cloned successfully"
+          } else {
+            # Update existing repository
+            Write-Output "Updating existing repository at $deployPath"
+            cd $deployPath
+            
+            # Ensure we're on the correct branch
+            git fetch origin $branch
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to fetch from origin"
+              exit 1
+            }
+            
+            # Pull with rebase to get latest changes
+            git checkout $branch
+            git pull --rebase origin $branch
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to pull repository updates"
+              exit 1
+            }
+            Write-Output "✓ Repository updated successfully"
+          }
+
+      - name: Verify deployment
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $requiredFiles = @(
+            "setup.ps1",
+            "start.ps1",
+            "scripts/common.ps1"
+          )
+          
+          Write-Output "Verifying critical files..."
+          foreach ($file in $requiredFiles) {
+            $fullPath = Join-Path $deployPath $file
+            if (-not (Test-Path $fullPath)) {
+              Write-Error "Missing critical file: $file"
+              exit 1
+            }
+            Write-Output "✓ $file exists"
+          }
+
+      - name: Get deployment info
+        id: deploy-info
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          cd $deployPath
+          
+          $commitHash = git rev-parse --short HEAD
+          $commitMessage = git log -1 --pretty=%B
+          $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          $branch = "${{ env.BRANCH }}"
+          
+          echo "commit_hash=$commitHash" >> $env:GITHUB_OUTPUT
+          echo "commit_message=$($commitMessage.Trim())" >> $env:GITHUB_OUTPUT
+          echo "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
+          echo "branch=$branch" >> $env:GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        shell: pwsh
+        run: |
+          $summary = @(
+            "## ✓ Test Deployment Successful"
+            ""
+            "**Deployment Details:**"
+            "- **Target**: ${{ env.DEPLOY_PATH }}"
+            "- **Branch**: ${{ steps.deploy-info.outputs.branch }}"
+            "- **Commit**: ${{ steps.deploy-info.outputs.commit_hash }}"
+            "- **Message**: ${{ steps.deploy-info.outputs.commit_message }}"
+            "- **Time**: ${{ steps.deploy-info.outputs.timestamp }}"
+            ""
+            "**Next Steps:**"
+            "- SSH into your Windows server"
+            "- Navigate to ${{ env.DEPLOY_PATH }}"
+            "- Run: `./setup.ps1` (if needed)"
+            "- Run: `./start.ps1` to launch JupyterLab"
+          ) -join "`n"
+          
+          Write-Output $summary
+          
+          # Also write to GitHub Actions summary
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+
+      - name: Setup NSSM JupyterLab Service
+        id: nssm-setup
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $serviceName = "${{ env.SERVICE_NAME }}"
+          $setupScript = Join-Path $deployPath "scripts\setup-nssm-service.ps1"
+          
+          Write-Output "Setting up NSSM service..."
+          & $setupScript -DeployPath $deployPath -ServiceName $serviceName
+          
+          if ($LASTEXITCODE -eq 0) {
+            echo "nssm_status=success" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "nssm_status=failed" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Deployment notification
+        if: success()
+        shell: pwsh
+        run: |
+          Write-Output "✓ Test deployment completed successfully!"
+          Write-Output "MaxLab Test is now available at: ${{ env.DEPLOY_PATH }}"
+          Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
+          Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"
+          Write-Output ""
+          if ("${{ steps.nssm-setup.outputs.nssm_status }}" -eq "success") {
+            Write-Output "✓ JupyterLab service is running as ${{ env.SERVICE_NAME }}"
             Write-Output "  Access: http://localhost:8888 (or via Tailscale)"
           } else {
             Write-Output "⚠ NSSM setup encountered issues. Check the logs above."

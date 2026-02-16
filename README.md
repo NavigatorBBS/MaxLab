@@ -198,6 +198,21 @@ To install additional packages at runtime within a notebook:
 
 ---
 
+## 🚀 Deployment
+
+MaxLab supports **automated deployment to Windows servers** via GitHub Actions:
+
+- **Production environment**: Deploys from `main` branch to `D:\apps\MaxLab`
+- **Test environment**: Deploys from `test` branch to `D:\apps\MaxLabTest`
+- **Automatic triggers**: Deployments trigger on push or manual workflow dispatch
+- **Service management**: JupyterLab runs as Windows services using NSSM
+
+For complete deployment setup and management instructions, see:
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
+- [NSSM Service Guide](NSSM_SETUP.md) - Windows service management and troubleshooting
+
+---
+
 ## 🗂️ Workspace Structure
 
 The `workspace/` folder contains example notebooks that are built into the static site:
