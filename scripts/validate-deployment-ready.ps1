@@ -7,7 +7,8 @@
     Checks all required dependencies and configurations for successful deployment:
     - NSSM installation and PATH
     - Git installation
-    - Conda environment
+    - Conda installation and PATH
+    - maxlab conda environment (created by setup.ps1)
     - Directory permissions
     - Network connectivity
     - Disk space
@@ -103,19 +104,7 @@ if (Test-Command "conda") {
     $issues += "Conda Installation: Install Miniconda3 from https://docs.conda.io/projects/miniconda/en/latest/"
 }
 
-# Check 5: JupyterLab installed
-Write-Output "Checking JupyterLab installation..."
-try {
-    & conda run -n maxlab jupyter --version 2>&1 | Out-Null
-    Write-Status "JupyterLab found in maxlab environment" "success"
-    $checks_passed++
-} catch {
-    Write-Status "JupyterLab not installed" "error"
-    $checks_failed++
-    $issues += "JupyterLab: Run on server: conda activate maxlab and pip install jupyterlab"
-}
-
-# Check 6: Directory permissions
+# Check 5: Directory permissions
 Write-Output "Checking deployment directory permissions..."
 $deploy_dirs = @("D:\apps\MaxLab", "D:\apps\MaxLabTest")
 $perms_ok = $true
@@ -144,7 +133,7 @@ if ($perms_ok) {
     $issues += "Directory Permissions: Ensure user running runner has write access to D:\apps\"
 }
 
-# Check 7: Network connectivity
+# Check 6: Network connectivity
 Write-Output "Checking network connectivity..."
 try {
     $test = Invoke-WebRequest -Uri "https://github.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue
@@ -160,7 +149,7 @@ try {
     $issues += "Network Connectivity: Ensure server has internet access to github.com"
 }
 
-# Check 8: Disk space
+# Check 7: Disk space
 Write-Output "Checking disk space..."
 $disk = Get-Volume -DriveLetter D -ErrorAction SilentlyContinue
 if ($disk) {
@@ -176,7 +165,7 @@ if ($disk) {
     Write-Status "Could not check disk space" "warning"
 }
 
-# Check 9: GitHub Actions runner
+# Check 8: GitHub Actions runner
 Write-Output "Checking GitHub Actions runner..."
 $runner_process = Get-Process -Name "Runner.Listener" -ErrorAction SilentlyContinue
 if ($runner_process) {
@@ -187,7 +176,7 @@ if ($runner_process) {
     $issues += "Runner Status: Start GitHub Actions runner service if deployments should be automatic"
 }
 
-# Check 10: Port availability
+# Check 9: Port availability
 Write-Output "Checking port availability..."
 $ports = @(8888, 8889)
 $ports_ok = $true
@@ -213,7 +202,7 @@ if ($ports_ok) {
     $issues += "Port Availability: Kill existing processes using ports 8888/8889 or configure different ports in .env"
 }
 
-# Check 11: Tailscale Installation
+# Check 10: Tailscale Installation
 Write-Output "Checking Tailscale installation..."
 if (Test-Command "tailscale.exe") {
     try {
@@ -231,7 +220,7 @@ if (Test-Command "tailscale.exe") {
     $issues += "Tailscale Installation: Run: choco install tailscale OR download from https://tailscale.com/download"
 }
 
-# Check 12: Tailscale auth secrets in GitHub Actions
+# Check 11: Tailscale auth secrets in GitHub Actions
 Write-Output "Checking Tailscale auth secrets configuration..."
 $env_token = $env:TAILSCALE_AUTHKEY
 if ($env_token) {

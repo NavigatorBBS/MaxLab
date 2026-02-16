@@ -71,6 +71,45 @@ conda --version
 
 ---
 
+#### 2a. Add Conda to PATH (Critical)
+
+**Why**: The validation script and deployment process require `conda` to be in your system PATH.
+
+**Check if conda is in PATH:**
+```powershell
+conda --version
+```
+
+If this works, conda is already in PATH. If not, add it manually:
+
+```powershell
+# Find conda installation location
+Get-ChildItem -Path "C:\Users" -Filter "miniconda3" -Recurse -Directory
+
+# Example: If installed at C:\Users\chris\miniconda3
+# Add to PATH (run as Administrator):
+$path = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
+if ($path -notlike "*miniconda3*") {
+    [Environment]::SetEnvironmentVariable(
+        "Path",
+        "$path;C:\Users\chris\miniconda3;C:\Users\chris\miniconda3\Scripts",
+        [EnvironmentVariableTarget]::Machine
+    )
+}
+
+# After adding to PATH, RESTART the GitHub Actions runner service
+Restart-Service "GitHub*"
+```
+
+**Verify it worked:**
+```powershell
+# Restart PowerShell first
+$env:Path -split ";" | findstr miniconda3
+# Should show your miniconda3 path
+```
+
+---
+
 #### 3. Conda Environment: `maxlab`
 
 **Required for**: Python packages, JupyterLab
