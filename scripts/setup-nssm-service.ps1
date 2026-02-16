@@ -212,7 +212,19 @@ function Create-Service {
     
     Write-Status "Creating NSSM service: $ServiceName" "info"
     
-    & "$NSSM" install $ServiceName $WrapperPath
+    # Find PowerShell executable (prefer pwsh, fallback to powershell)
+    $pwshExe = Get-Command pwsh.exe -ErrorAction SilentlyContinue
+    if ($pwshExe) {
+        $psExe = $pwshExe.Source
+    } else {
+        $psExe = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+    }
+    
+    Write-Status "Using PowerShell: $psExe" "info"
+    
+    # Install service with PowerShell as the application
+    & "$NSSM" install $ServiceName $psExe
+    & "$NSSM" set $ServiceName AppParameters "-NoProfile -NoLogo -ExecutionPolicy Bypass -File `"$WrapperPath`""
     & "$NSSM" set $ServiceName AppDirectory (Split-Path $WrapperPath -Parent)
     & "$NSSM" set $ServiceName AppStdout "$LogsDir\jupyterlab-stdout.log"
     & "$NSSM" set $ServiceName AppStderr "$LogsDir\jupyterlab-stderr.log"
