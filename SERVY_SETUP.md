@@ -1,13 +1,14 @@
-# MaxLab NSSM Service Setup Guide
+# MaxLab Servy Service Setup Guide
 
 ## Overview
 
-MaxLab runs JupyterLab as Windows services using **NSSM** (Non-Sucking Service Manager). This provides:
+MaxLab runs JupyterLab as Windows services using **Servy** (a modern Windows service manager). This provides:
 - ✅ Automatic startup on server reboot
 - ✅ Auto-restart if JupyterLab crashes
-- ✅ Centralized logging to files and Windows Event Viewer
-- ✅ Easy service management without manual scripts
+- ✅ Centralized logging to files
+- ✅ Easy service management via CLI
 - ✅ Support for multiple services (production + test) on same server
+- ✅ Reliable service deletion and recreation
 
 ## Services
 
@@ -27,7 +28,7 @@ When you run the GitHub Actions deployment workflow, the appropriate service is 
 2. **Configured** with proper logging and auto-restart
 3. **Started** and verified as running
 
-No manual NSSM commands needed—the workflow handles everything!
+No manual Servy commands needed—the workflow handles everything!
 
 ## Service Details
 
@@ -40,7 +41,6 @@ No manual NSSM commands needed—the workflow handles everything!
 | **Service Type** | Windows Service |
 | **Auto Start** | Yes (starts on reboot) |
 | **Auto Restart** | Yes (on crash) |
-| **Restart Delay** | 5 seconds |
 | **Log Location** | `D:\apps\MaxLab\logs\service\` |
 | **Port** | 8888 (from `JUPYTER_PORT` in `.env`) |
 | **Environment** | `maxlab` conda environment |
@@ -54,7 +54,6 @@ No manual NSSM commands needed—the workflow handles everything!
 | **Service Type** | Windows Service |
 | **Auto Start** | Yes (starts on reboot) |
 | **Auto Restart** | Yes (on crash) |
-| **Restart Delay** | 5 seconds |
 | **Log Location** | `D:\apps\MaxLabTest\logs\service\` |
 | **Port** | 8889 (from `JUPYTER_PORT` in `.env`, must differ from production) |
 | **Environment** | `maxlab` conda environment |
@@ -84,8 +83,8 @@ If ports conflict, one service will fail to start. See [Troubleshooting](#port-a
 # Using Windows Services
 Get-Service MaxLabJupyterLab
 
-# Using NSSM (detailed)
-nssm status MaxLabJupyterLab
+# Using Servy CLI (detailed)
+servy-cli status --name=MaxLabJupyterLab
 ```
 
 **Test:**
@@ -93,8 +92,8 @@ nssm status MaxLabJupyterLab
 # Using Windows Services
 Get-Service MaxLabJupyterLabTest
 
-# Using NSSM (detailed)
-nssm status MaxLabJupyterLabTest
+# Using Servy CLI (detailed)
+servy-cli status --name=MaxLabJupyterLabTest
 ```
 
 **Output meanings:**
@@ -109,8 +108,8 @@ nssm status MaxLabJupyterLabTest
 # Using Windows Services
 Start-Service MaxLabJupyterLab
 
-# Or using NSSM
-nssm start MaxLabJupyterLab
+# Or using Servy CLI
+servy-cli start --name=MaxLabJupyterLab
 ```
 
 **Test:**
@@ -118,8 +117,8 @@ nssm start MaxLabJupyterLab
 # Using Windows Services
 Start-Service MaxLabJupyterLabTest
 
-# Or using NSSM
-nssm start MaxLabJupyterLabTest
+# Or using Servy CLI
+servy-cli start --name=MaxLabJupyterLabTest
 ```
 
 ### Stop the Service
@@ -129,8 +128,8 @@ nssm start MaxLabJupyterLabTest
 # Using Windows Services
 Stop-Service MaxLabJupyterLab -Force
 
-# Or using NSSM
-nssm stop MaxLabJupyterLab
+# Or using Servy CLI
+servy-cli stop --name=MaxLabJupyterLab
 ```
 
 **Test:**
@@ -138,8 +137,8 @@ nssm stop MaxLabJupyterLab
 # Using Windows Services
 Stop-Service MaxLabJupyterLabTest -Force
 
-# Or using NSSM
-nssm stop MaxLabJupyterLabTest
+# Or using Servy CLI
+servy-cli stop --name=MaxLabJupyterLabTest
 ```
 
 ### Restart the Service
@@ -149,8 +148,8 @@ nssm stop MaxLabJupyterLabTest
 # Using Windows Services
 Restart-Service MaxLabJupyterLab
 
-# Or using NSSM
-nssm restart MaxLabJupyterLab
+# Or using Servy CLI
+servy-cli restart --name=MaxLabJupyterLab
 ```
 
 **Test:**
@@ -158,8 +157,8 @@ nssm restart MaxLabJupyterLab
 # Using Windows Services
 Restart-Service MaxLabJupyterLabTest
 
-# Or using NSSM
-nssm restart MaxLabJupyterLabTest
+# Or using Servy CLI
+servy-cli restart --name=MaxLabJupyterLabTest
 ```
 
 ## Viewing Logs
@@ -207,20 +206,6 @@ Get-Content "D:\apps\MaxLab\logs\service\jupyterlab-stderr.log" -Tail 50
 ```powershell
 Get-Content "D:\apps\MaxLabTest\logs\service\jupyterlab-stderr.log" -Tail 50
 ```
-
-### View Windows Event Viewer Logs
-
-1. Open **Event Viewer** (`eventvwr.msc`)
-2. Navigate to **Windows Logs** → **Application**
-3. Filter for events with source `MaxLabJupyterLab` or `MaxLabJupyterLabTest`
-
-## Log Rotation
-
-Logs are automatically rotated when they reach 10 MB. Old logs are archived to prevent disk space issues.
-
-Log files:
-- `jupyterlab-stdout.log` - Standard output (normal operation)
-- `jupyterlab-stderr.log` - Error output (problems)
 
 ## Troubleshooting
 
@@ -279,10 +264,6 @@ netstat -ano | findstr :8889
    ```powershell
    Restart-Service MaxLabJupyterLab
    Restart-Service MaxLabJupyterLabTest
-   ```
-
-If you need to use different ports, make sure both `.env` files have unique values.
-   Restart-Service MaxLabJupyterLab
    ```
 
 ### Service Keeps Crashing
@@ -419,21 +400,9 @@ open https://maxlab.cobbler-python.ts.net
 
 ## Advanced Service Configuration
 
-### View All NSSM Settings
+### View Service Help
 ```powershell
-nssm dump MaxLabJupyterLab
-```
-
-### Edit Service Settings
-```powershell
-# Change auto-restart delay (in milliseconds)
-nssm set MaxLabJupyterLab AppRestartDelay 10000
-
-# Change restart throttle
-nssm set MaxLabJupyterLab AppThrottle 2000
-
-# Apply changes without restarting service
-nssm restart MaxLabJupyterLab
+servy-cli help
 ```
 
 ### Remove Service Completely
@@ -441,8 +410,8 @@ nssm restart MaxLabJupyterLab
 # Stop service first
 Stop-Service MaxLabJupyterLab
 
-# Remove via NSSM
-nssm remove MaxLabJupyterLab confirm
+# Remove via Servy CLI
+servy-cli uninstall --name=MaxLabJupyterLab
 
 # Verify removal
 Get-Service MaxLabJupyterLab  # Should fail with "not found"
@@ -477,29 +446,42 @@ Get-Process | Where-Object {$_.ProcessName -like "*python*"}
 Get-Counter -Counter "\Process(python*)\% Processor Time" -SampleInterval 1 -MaxSamples 10
 ```
 
-### Restart History
-```powershell
-Get-EventLog Application -Source "MaxLabJupyterLab" -Newest 20
-```
-
 ## Deployment Workflow Integration
 
 The GitHub Actions deployment workflow automatically:
 
-1. **Stops** any existing `MaxLabJupyterLab` service
-2. **Removes** the old service
+1. **Stops** any existing service via Servy CLI
+2. **Removes** the old service (clean uninstall)
 3. **Creates** a new service with latest code
-4. **Configures** logging and auto-restart
+4. **Configures** logging and auto-start
 5. **Starts** the service
 6. **Verifies** it's running
 
-This happens in the "Setup NSSM JupyterLab Service" step of the workflow.
+This happens in the "Setup Servy JupyterLab Service" step of the workflow.
+
+## Installing Servy
+
+Servy is automatically installed during deployment if not present. For manual installation:
+
+**Option 1 - Windows Package Manager (Recommended):**
+```powershell
+winget install -e --id aelassas.Servy
+```
+
+**Option 2 - Chocolatey:**
+```powershell
+choco install servy
+```
+
+**Option 3 - Manual Download:**
+1. Download from: https://github.com/aelassas/servy/releases
+2. Extract and add to PATH
 
 ## Related Documentation
 
 - [MaxLab Deployment Guide](DEPLOYMENT_GUIDE.md) - Overall deployment process
 - [MaxLab README](README.md) - Project overview
-- [NSSM Documentation](https://nssm.cc/usage) - Detailed NSSM reference
+- [Servy Documentation](https://github.com/aelassas/servy/wiki) - Detailed Servy reference
 - [Tailscale Documentation](https://tailscale.com/kb/) - Tailscale setup
 
 ## Quick Reference Commands
@@ -511,22 +493,24 @@ Start-Service MaxLabJupyterLab               # Start
 Stop-Service MaxLabJupyterLab -Force         # Stop
 Restart-Service MaxLabJupyterLab             # Restart
 
+# Servy CLI
+servy-cli status --name=MaxLabJupyterLab     # Detailed status
+servy-cli start --name=MaxLabJupyterLab      # Start
+servy-cli stop --name=MaxLabJupyterLab       # Stop
+servy-cli restart --name=MaxLabJupyterLab    # Restart
+servy-cli uninstall --name=MaxLabJupyterLab  # Remove
+
 # Logging
 Get-Content D:\apps\MaxLab\logs\service\jupyterlab-stdout.log -Tail 50
 Get-Content D:\apps\MaxLab\logs\service\jupyterlab-stderr.log -Tail 50
 
 # Port checking
 netstat -ano | findstr :8888
-
-# NSSM details
-nssm status MaxLabJupyterLab
-nssm dump MaxLabJupyterLab
 ```
 
 ## Support
 
 For issues:
 1. Check logs: `D:\apps\MaxLab\logs\service\`
-2. Review Event Viewer: **Application** tab
-3. Test manually: `cd D:\apps\MaxLab && ./start.ps1`
-4. Check GitHub Actions workflow logs for deployment issues
+2. Test manually: `cd D:\apps\MaxLab && ./start.ps1`
+3. Check GitHub Actions workflow logs for deployment issues

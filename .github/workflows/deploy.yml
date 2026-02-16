@@ -194,38 +194,6 @@ jobs:
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
 
-      - name: Stop and Remove Existing NSSM Service
-        shell: pwsh
-        run: |
-          $serviceName = "${{ env.SERVICE_NAME }}"
-           
-           Write-Output "Checking for existing NSSM service: $serviceName"
-           $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-           
-           if ($null -ne $service) {
-             Write-Output "Found existing service. Stopping and removing..."
-             
-             if ($service.Status -eq "Running") {
-               Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-               Start-Sleep -Seconds 2
-             }
-             
-             try {
-               $nssm = Get-Command nssm.exe -ErrorAction SilentlyContinue
-               if ($nssm) {
-                 & $nssm.Source remove $serviceName confirm
-                 Start-Sleep -Seconds 1
-               }
-             } catch {
-               Write-Warning "Could not remove service with nssm, attempting with sc..."
-               sc.exe delete $serviceName 2>&1 | Out-Null
-             }
-             
-             Write-Output "✓ Existing service removed"
-           } else {
-             Write-Output "No existing service found, proceeding..."
-           }
-
       - name: Configure Environment (.env)
         shell: pwsh
         run: |
@@ -263,21 +231,21 @@ jobs:
           }
           Write-Output "✓ MaxLab environment setup complete"
 
-      - name: Setup NSSM JupyterLab Service
-        id: nssm-setup
+      - name: Setup Servy JupyterLab Service
+        id: servy-setup
         shell: pwsh
         run: |
           $deployPath = "${{ env.DEPLOY_PATH }}"
           $serviceName = "${{ env.SERVICE_NAME }}"
-          $setupScript = Join-Path $deployPath "scripts\setup-nssm-service.ps1"
+          $setupScript = Join-Path $deployPath "scripts\setup-servy-service.ps1"
           
-          Write-Output "Setting up NSSM service..."
+          Write-Output "Setting up Servy service..."
           & $setupScript -DeployPath $deployPath -ServiceName $serviceName
           
           if ($LASTEXITCODE -eq 0) {
-            echo "nssm_status=success" >> $env:GITHUB_OUTPUT
+            echo "servy_status=success" >> $env:GITHUB_OUTPUT
           } else {
-            echo "nssm_status=failed" >> $env:GITHUB_OUTPUT
+            echo "servy_status=failed" >> $env:GITHUB_OUTPUT
           }
 
       - name: Deployment notification
@@ -289,11 +257,11 @@ jobs:
           Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
           Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"
           Write-Output ""
-          if ("${{ steps.nssm-setup.outputs.nssm_status }}" -eq "success") {
+          if ("${{ steps.servy-setup.outputs.servy_status }}" -eq "success") {
             Write-Output "✓ JupyterLab service is running as ${{ env.SERVICE_NAME }}"
             Write-Output "  Access: http://localhost:8888 (or via Tailscale)"
           } else {
-            Write-Output "⚠ NSSM setup encountered issues. Check the logs above."
+            Write-Output "⚠ Servy setup encountered issues. Check the logs above."
           }
 
   # Deployment job for TEST (test branch)
@@ -405,38 +373,6 @@ jobs:
           echo "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
           echo "branch=$branch" >> $env:GITHUB_OUTPUT
 
-      - name: Stop and Remove Existing NSSM Service
-        shell: pwsh
-        run: |
-          $serviceName = "${{ env.SERVICE_NAME }}"
-           
-           Write-Output "Checking for existing NSSM service: $serviceName"
-           $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-           
-           if ($null -ne $service) {
-             Write-Output "Found existing service. Stopping and removing..."
-             
-             if ($service.Status -eq "Running") {
-               Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-               Start-Sleep -Seconds 2
-             }
-             
-             try {
-               $nssm = Get-Command nssm.exe -ErrorAction SilentlyContinue
-               if ($nssm) {
-                 & $nssm.Source remove $serviceName confirm
-                 Start-Sleep -Seconds 1
-               }
-             } catch {
-               Write-Warning "Could not remove service with nssm, attempting with sc..."
-               sc.exe delete $serviceName 2>&1 | Out-Null
-             }
-             
-             Write-Output "✓ Existing service removed"
-           } else {
-             Write-Output "No existing service found, proceeding..."
-           }
-
       - name: Configure Environment (.env)
         shell: pwsh
         run: |
@@ -499,21 +435,21 @@ jobs:
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
 
-      - name: Setup NSSM JupyterLab Service
-        id: nssm-setup
+      - name: Setup Servy JupyterLab Service
+        id: servy-setup
         shell: pwsh
         run: |
           $deployPath = "${{ env.DEPLOY_PATH }}"
           $serviceName = "${{ env.SERVICE_NAME }}"
-          $setupScript = Join-Path $deployPath "scripts\setup-nssm-service.ps1"
+          $setupScript = Join-Path $deployPath "scripts\setup-servy-service.ps1"
           
-          Write-Output "Setting up NSSM service..."
+          Write-Output "Setting up Servy service..."
           & $setupScript -DeployPath $deployPath -ServiceName $serviceName
           
           if ($LASTEXITCODE -eq 0) {
-            echo "nssm_status=success" >> $env:GITHUB_OUTPUT
+            echo "servy_status=success" >> $env:GITHUB_OUTPUT
           } else {
-            echo "nssm_status=failed" >> $env:GITHUB_OUTPUT
+            echo "servy_status=failed" >> $env:GITHUB_OUTPUT
           }
 
       - name: Deployment notification
@@ -525,9 +461,9 @@ jobs:
           Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
           Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"
           Write-Output ""
-          if ("${{ steps.nssm-setup.outputs.nssm_status }}" -eq "success") {
+          if ("${{ steps.servy-setup.outputs.servy_status }}" -eq "success") {
             Write-Output "✓ JupyterLab service is running as ${{ env.SERVICE_NAME }}"
-            Write-Output "  Access: http://localhost:8888 (or via Tailscale)"
+            Write-Output "  Access: http://localhost:8889 (or via Tailscale)"
           } else {
-            Write-Output "⚠ NSSM setup encountered issues. Check the logs above."
+            Write-Output "⚠ Servy setup encountered issues. Check the logs above."
           }

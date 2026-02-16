@@ -96,42 +96,33 @@ cd C:\Users\chris\code\MaxLab
 
 ---
 
-#### 4. NSSM (Non-Sucking Service Manager)
+#### 4. Servy (Windows Service Manager)
 
 **Required for**: Running JupyterLab as Windows service
 
 ```powershell
 # Check installation
-nssm.exe --version
+servy-cli.exe help
 
 # If not found, installation options (in order of preference):
 
 # Option 1: Windows Package Manager (winget) - Modern Windows systems
-winget install nssm
+winget install -e --id aelassas.Servy
 
-# Option 2: Chocolatey (most reliable)
-choco install nssm -y
+# Option 2: Chocolatey
+choco install servy -y
 
-# Option 3: Manual download and extraction
-# 1. Download: https://nssm.cc/download
-# 2. Extract to: C:\tools\nssm\
-# 3. Add to PATH:
-$path = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
-if ($path -notlike "*C:\tools\nssm*") {
-    [Environment]::SetEnvironmentVariable(
-        "Path",
-        "$path;C:\tools\nssm\win64",
-        [EnvironmentVariableTarget]::Machine
-    )
-}
+# Option 3: Manual download
+# 1. Download: https://github.com/aelassas/servy/releases
+# 2. Extract and add to PATH
 
 # After PATH change, RESTART the system or GitHub Actions runner service
 ```
 
 **Troubleshooting**:
-- If NSSM still not found after install, check PATH:
+- If Servy still not found after install, check PATH:
   ```powershell
-  $env:Path -split ";" | findstr nssm
+  $env:Path -split ";" | findstr servy
   ```
 - Restart GitHub Actions runner if not in PATH:
   ```powershell
@@ -365,21 +356,17 @@ netstat -ano | findstr LISTENING | findstr :8889
 
 ## Troubleshooting
 
-### "NSSM not found" Error
+### "Servy not found" Error
 
-**Cause**: NSSM isn't installed or not in PATH
+**Cause**: Servy isn't installed or not in PATH
 
 **Solution**: The deployment script will automatically attempt installation. If auto-install doesn't work:
 ```powershell
-# Option 1: Windows Package Manager
-winget install nssm
+# Option 1: Windows Package Manager (Recommended)
+winget install -e --id aelassas.Servy
 
-# Option 2: Chocolatey (most reliable)
-choco install nssm -y
-
-# Option 3: Add to PATH manually (if already installed)
-$path = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
-[Environment]::SetEnvironmentVariable("Path", "$path;C:\tools\nssm\win64", [EnvironmentVariableTarget]::Machine)
+# Option 2: Chocolatey
+choco install servy -y
 
 # Restart GitHub Actions runner
 Restart-Service "GitHub*" -Force
@@ -438,7 +425,7 @@ If issues persist:
 
 2. **Review documentation**:
    - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Deployment instructions
-   - [NSSM_SETUP.md](NSSM_SETUP.md) - Service management
+   - [SERVY_SETUP.md](SERVY_SETUP.md) - Service management
 
 3. **Run validation script**: 
    ```powershell

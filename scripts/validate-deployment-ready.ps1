@@ -5,7 +5,7 @@
     
 .DESCRIPTION
     Checks all required dependencies and configurations for successful deployment:
-    - NSSM installation
+    - Servy installation
     - Git installation
     - Conda installation (searches standard paths)
     - maxlab conda environment (created by setup.ps1)
@@ -89,16 +89,15 @@ $checks_failed = 0
 $issues = @()
 $conda_path = $null
 
-# Check 1: NSSM Installation
-Write-Output "Checking NSSM installation..."
-if (Test-Command "nssm.exe") {
-    $nssm_version = & nssm.exe --version 2>&1
-    Write-Status "NSSM found: $nssm_version" "success"
+# Check 1: Servy Installation
+Write-Output "Checking Servy installation..."
+if (Test-Command "servy-cli.exe") {
+    Write-Status "Servy CLI found" "success"
     $checks_passed++
 } else {
-    Write-Status "NSSM not found in PATH" "error"
+    Write-Status "Servy not found in PATH" "error"
     $checks_failed++
-    $issues += "NSSM Installation: Run 'winget install nssm' or 'choco install nssm -y' or download from https://nssm.cc/download"
+    $issues += "Servy Installation: Run 'winget install -e --id aelassas.Servy' or 'choco install servy -y' or download from https://github.com/aelassas/servy/releases"
 }
 
 # Check 2: Git Installation

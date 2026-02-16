@@ -5,7 +5,7 @@
 ⚠️ **Before deploying**, ensure your Windows server runner is fully configured.
 
 Follow the [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) to:
-- Install required software (NSSM, Git, Conda, **Tailscale**)
+- Install required software (Servy, Git, Conda, **Tailscale**)
 - Run `setup.ps1` to create maxlab environment
 - Configure Tailscale auth secrets
 
@@ -85,8 +85,8 @@ These jobs run **once** regardless of which branch is deployed. Both deployment 
 3. Clone or pull latest code
 4. Verify critical files exist
 5. Generate deployment summary
-6. Setup MaxLabJupyterLab service with NSSM
-   (Auto-installs NSSM via winget if not found)
+6. Setup MaxLabJupyterLab service with Servy
+   (Auto-installs Servy via winget if not found)
 ```
 
 Runs automatically on: `git push origin main` or manual workflow dispatch with branch=main
@@ -98,8 +98,8 @@ Runs automatically on: `git push origin main` or manual workflow dispatch with b
 3. Clone or pull latest code
 4. Verify critical files exist
 5. Generate deployment summary
-6. Setup MaxLabJupyterLabTest service with NSSM
-   (Auto-installs NSSM via winget if not found)
+6. Setup MaxLabJupyterLabTest service with Servy
+   (Auto-installs Servy via winget if not found)
 ```
 
 Runs automatically on: `git push origin test` or manual workflow dispatch with branch=test
@@ -169,7 +169,7 @@ Get-Service MaxLabJupyterLab
 Get-Service MaxLabJupyterLabTest
 ```
 
-Both services can run simultaneously on the same server. See the [NSSM_SETUP.md](NSSM_SETUP.md) guide for detailed service management.
+Both services can run simultaneously on the same server. See the [SERVY_SETUP.md](SERVY_SETUP.md) guide for detailed service management.
 
 ### First-Time Setup (if needed)
 
@@ -203,7 +203,7 @@ Start-Service MaxLabJupyterLabTest     # Start
 Restart-Service MaxLabJupyterLabTest   # Restart
 ```
 
-For complete service management and troubleshooting, see [NSSM_SETUP.md](NSSM_SETUP.md).
+For complete service management and troubleshooting, see [SERVY_SETUP.md](SERVY_SETUP.md).
 
 ## Workflow Features
 
@@ -317,6 +317,6 @@ If you encounter issues:
 
 - ✅ Updated: `.github/workflows/deploy.yml` - Parameterized for dual-environment deployment
 - ✅ Updated: `DEPLOYMENT_GUIDE.md` - This file
-- ✅ Updated: `NSSM_SETUP.md` - Added test service documentation
+- ✅ Updated: `SERVY_SETUP.md` - Added test service documentation
 - ✅ No changes needed to existing code
 - ✅ No changes needed to setup.ps1 or start.ps1
