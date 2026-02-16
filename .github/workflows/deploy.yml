@@ -193,6 +193,21 @@ jobs:
           
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+       - name: Setup MaxLab Environment
+         shell: pwsh
+         run: |
+           $deployPath = "${{ env.DEPLOY_PATH }}"
+           $setupScript = Join-Path $deployPath "setup.ps1"
+           
+           Write-Output "Setting up MaxLab environment with conda and packages..."
+           cd $deployPath
+           & $setupScript
+           
+           if ($LASTEXITCODE -ne 0) {
+             Write-Error "Failed to setup MaxLab environment"
+             exit 1
+           }
+           Write-Output "✓ MaxLab environment setup complete"
 
       - name: Setup NSSM JupyterLab Service
         id: nssm-setup
