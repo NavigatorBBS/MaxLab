@@ -1,8 +1,30 @@
 # MaxLab GitHub Actions Deployment Guide
 
+## Overview
+
+MaxLab supports **dual-environment deployment**:
+- **Production** - Deployed from `main` branch to `D:\apps\MaxLab`
+- **Test** - Deployed from `test` branch to `D:\apps\MaxLabTest`
+
+Both deployments run on the same self-hosted Windows server runner and can execute in parallel without conflict.
+
 ## Quick Start
 
-### How to Deploy
+### Automatic Deployment (Push to Branch)
+
+**Production Deployment:**
+```bash
+git push origin main
+```
+This automatically triggers deployment to `D:\apps\MaxLab`
+
+**Test Deployment:**
+```bash
+git push origin test
+```
+This automatically triggers deployment to `D:\apps\MaxLabTest`
+
+### Manual Deployment (Workflow Dispatch)
 
 1. **Go to GitHub Repository**
    - Navigate to your MaxLab repository
@@ -14,12 +36,12 @@
 
 3. **Trigger the Workflow**
    - Click "Run workflow" button
-   - (Optional) Select a custom branch in the dropdown
+   - Select branch to deploy: `main` (production) or `test` (test)
    - Click the green "Run workflow" button
 
 4. **Monitor Deployment**
    - Watch the workflow run in real-time
-   - See validation jobs (PowerShell, Python, Notebooks) run in parallel on Ubuntu
+   - See validation jobs (Python linting, Notebook checks) run in parallel on Ubuntu
    - See deployment job run on your Windows server runner
    - Check the deployment summary for confirmation
 
@@ -27,11 +49,7 @@
 
 ### Validation Phase (Runs in Parallel on Ubuntu)
 ```
-PowerShell Linting
-  ↓ Checks all .ps1 files with PSScriptAnalyzer
-  ↓ Validates no warnings or errors
-
-Python Linting  
+Python Linting
   ↓ Checks all Python files with flake8
   ↓ Validates code style compliance
 
@@ -40,14 +58,31 @@ Notebook Outputs
   ↓ Ensures notebooks have no saved outputs
 ```
 
-### Deployment Phase (Runs on Windows Server)
+These jobs run **once** regardless of which branch is deployed. Both deployment jobs wait for these to complete.
+
+### Deployment Phase (Production - Main Branch)
 ```
-1. Checkout code from GitHub
+1. Checkout code from GitHub (main branch)
 2. Validate D:\apps\MaxLab directory
 3. Clone or pull latest code
 4. Verify critical files exist
 5. Generate deployment summary
+6. Setup MaxLabJupyterLab service with NSSM
 ```
+
+Runs automatically on: `git push origin main` or manual workflow dispatch with branch=main
+
+### Deployment Phase (Test - Test Branch)
+```
+1. Checkout code from GitHub (test branch)
+2. Validate D:\apps\MaxLabTest directory
+3. Clone or pull latest code
+4. Verify critical files exist
+5. Generate deployment summary
+6. Setup MaxLabJupyterLabTest service with NSSM
+```
+
+Runs automatically on: `git push origin test` or manual workflow dispatch with branch=test
 
 ## Troubleshooting
 
@@ -81,61 +116,86 @@ Notebook Outputs
 
 ## Deployment Inputs
 
-When running the workflow, you can specify:
+When using manual workflow dispatch, you can specify:
 
 ### Branch (Optional)
+- **Options**: `main` (production), `test` (test)
 - **Default**: `main`
-- **Can override**: Any branch in your repository
-- **Use case**: Deploy a feature branch for testing
-- **Example**: Set to `develop` to test staging branch
+- **Use case**: Deploy a different branch if using workflow dispatch
+- **Example**: Set to `test` to manually trigger test deployment
+
+## Environment Mapping
+
+| Branch | Deploy Path | Service Name | Tailnet | Trigger |
+|--------|-------------|--------------|---------|---------|
+| `main` | `D:\apps\MaxLab` | `MaxLabJupyterLab` | `maxlab.cobbler-python.ts.net` | Push + Manual |
+| `test` | `D:\apps\MaxLabTest` | `MaxLabJupyterLabTest` | `maxlab-test.cobbler-python.ts.net` | Push + Manual |
 
 ## After Deployment
 
-The deployment workflow now **automatically sets up JupyterLab as a Windows service** using NSSM. 
+The deployment workflow automatically sets up JupyterLab as a Windows service using NSSM.
 
 ### Service Status
-JupyterLab will be running as the `MaxLabJupyterLab` service. To check:
 
+Check which services are running:
+
+**Production Service:**
 ```powershell
 Get-Service MaxLabJupyterLab
 ```
 
-### First-Time Setup (if needed)
-If this is the first deployment, you may need to run setup on your Windows server:
+**Test Service:**
+```powershell
+Get-Service MaxLabJupyterLabTest
+```
 
+Both services can run simultaneously on the same server. See the [NSSM_SETUP.md](NSSM_SETUP.md) guide for detailed service management.
+
+### First-Time Setup (if needed)
+
+**For Production:**
 ```powershell
 cd D:\apps\MaxLab
 ./setup.ps1
 ```
 
-### Manual Operations (optional)
-To manage the service manually:
-
+**For Test:**
 ```powershell
-# Check status
-Get-Service MaxLabJupyterLab
-
-# Stop service
-Stop-Service MaxLabJupyterLab
-
-# Start service
-Start-Service MaxLabJupyterLab
-
-# Restart service
-Restart-Service MaxLabJupyterLab
+cd D:\apps\MaxLabTest
+./setup.ps1
 ```
 
-See [NSSM_SETUP.md](NSSM_SETUP.md) for complete service management and troubleshooting.
+### Manual Operations (optional)
+
+**Manage Production Service:**
+```powershell
+Get-Service MaxLabJupyterLab           # Check status
+Stop-Service MaxLabJupyterLab          # Stop
+Start-Service MaxLabJupyterLab         # Start
+Restart-Service MaxLabJupyterLab       # Restart
+```
+
+**Manage Test Service:**
+```powershell
+Get-Service MaxLabJupyterLabTest       # Check status
+Stop-Service MaxLabJupyterLabTest      # Stop
+Start-Service MaxLabJupyterLabTest     # Start
+Restart-Service MaxLabJupyterLabTest   # Restart
+```
+
+For complete service management and troubleshooting, see [NSSM_SETUP.md](NSSM_SETUP.md).
 
 ## Workflow Features
 
+✅ **Dual-Environment Deployment** - Separate production and test environments
+✅ **Automatic Triggers** - Deploy on push to main/test, plus manual trigger available
 ✅ **Parallel Validation** - All lint checks run simultaneously (faster feedback)
 ✅ **Blocking Errors** - Deployment blocked if any validation fails
 ✅ **Smart Git** - Auto-clones or updates existing deployment
 ✅ **Verification** - Checks critical files exist after deployment
 ✅ **Clear Summary** - Displays commit info, timestamp, and next steps
-✅ **Branch Selection** - Deploy any branch, not just main
-✅ **Environment Tracking** - GitHub tracks production deployments
+✅ **Concurrent Deployments** - Both environments can deploy in parallel
+✅ **Environment Tracking** - GitHub tracks both production and test deployments
 
 ## Monitoring
 
@@ -154,8 +214,7 @@ See [NSSM_SETUP.md](NSSM_SETUP.md) for complete service management and troublesh
 ## Safety Features
 
 1. **All changes validated before deployment**
-   - PowerShell lint runs first
-   - Python lint runs first
+   - Python linting runs first
    - Notebook checks run first
    - Deployment only if ALL pass
 
@@ -169,22 +228,40 @@ See [NSSM_SETUP.md](NSSM_SETUP.md) for complete service management and troublesh
    - Know how to fix it
    - Can retry after fixing
 
+4. **Separate services prevent conflicts**
+   - Production: `MaxLabJupyterLab` in `D:\apps\MaxLab`
+   - Test: `MaxLabJupyterLabTest` in `D:\apps\MaxLabTest`
+   - Both can run simultaneously
+
 ## Advanced Usage
 
 ### Rollback to Previous Version
+
+**For Production:**
 ```powershell
 cd D:\apps\MaxLab
 git log --oneline -n 10  # See recent commits
 git checkout <commit-hash>  # Go back to specific commit
+Restart-Service MaxLabJupyterLab
+```
+
+**For Test:**
+```powershell
+cd D:\apps\MaxLabTest
+git log --oneline -n 10  # See recent commits
+git checkout <commit-hash>  # Go back to specific commit
+Restart-Service MaxLabJupyterLabTest
 ```
 
 ### Redeploy Same Commit
-Run workflow again with same branch - will pull latest and verify
+1. Run workflow again with same branch
+2. Will pull latest and verify on target environment
 
-### Deploy Feature Branch
-1. Run workflow
-2. Select your feature branch in inputs
-3. Code deploys from that branch for testing
+### Concurrent Deployments
+Both environments support parallel deployments:
+- Push to `main` and `test` in quick succession
+- Both will deploy to their respective directories
+- No conflicts due to separate directories and service names
 
 ## Support
 
@@ -193,10 +270,33 @@ If you encounter issues:
 2. Look for specific error messages
 3. Verify Windows server has internet
 4. Verify GitHub Actions runner is online
-5. Check file permissions on D:\apps\MaxLab
+5. Check file permissions on both deployment directories:
+   - `D:\apps\MaxLab` (production)
+   - `D:\apps\MaxLabTest` (test)
+
+## Troubleshooting Dual Deployments
+
+### Both Deployments Failing
+- Check if validation jobs (Python lint, Notebook outputs) are failing
+- If validation fails, both deployments are blocked
+- Fix the issue and push again
+
+### One Deployment Fails, Other Succeeds
+- Each branch deployment is independent
+- Production failure doesn't affect test deployment
+- Fix the issue on the specific branch and re-push
+
+### Services Won't Start
+- Check logs in respective directories:
+  - Production: `D:\apps\MaxLab\logs\service\`
+  - Test: `D:\apps\MaxLabTest\logs\service\`
+- Ensure conda environment `maxlab` is installed
+- Check port conflicts (use different JUPYTER_PORT per .env)
 
 ## Files Modified/Created
 
-- ✅ Created: `.github/workflows/deploy.yml` - Main deployment workflow
+- ✅ Updated: `.github/workflows/deploy.yml` - Parameterized for dual-environment deployment
+- ✅ Updated: `DEPLOYMENT_GUIDE.md` - This file
+- ✅ Updated: `NSSM_SETUP.md` - Added test service documentation
 - ✅ No changes needed to existing code
 - ✅ No changes needed to setup.ps1 or start.ps1

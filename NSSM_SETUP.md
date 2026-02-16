@@ -2,16 +2,28 @@
 
 ## Overview
 
-MaxLab now runs JupyterLab as a Windows service using **NSSM** (Non-Sucking Service Manager). This provides:
+MaxLab runs JupyterLab as Windows services using **NSSM** (Non-Sucking Service Manager). This provides:
 - ✅ Automatic startup on server reboot
 - ✅ Auto-restart if JupyterLab crashes
 - ✅ Centralized logging to files and Windows Event Viewer
 - ✅ Easy service management without manual scripts
+- ✅ Support for multiple services (production + test) on same server
+
+## Services
+
+MaxLab supports two concurrent services:
+
+| Service | Directory | Branch | Default Port |
+|---------|-----------|--------|--------------|
+| `MaxLabJupyterLab` | `D:\apps\MaxLab` | `main` | 8888 |
+| `MaxLabJupyterLabTest` | `D:\apps\MaxLabTest` | `test` | 8889 |
+
+Both services can run simultaneously on the same Windows server.
 
 ## Automatic Setup via Deployment
 
-When you run the GitHub Actions deployment workflow, the service is automatically:
-1. **Created** with the name `MaxLabJupyterLab`
+When you run the GitHub Actions deployment workflow, the appropriate service is automatically:
+1. **Created** with the correct name (production or test)
 2. **Configured** with proper logging and auto-restart
 3. **Started** and verified as running
 
@@ -19,20 +31,55 @@ No manual NSSM commands needed—the workflow handles everything!
 
 ## Service Details
 
+### Production Service
+
 | Property | Value |
 |----------|-------|
 | **Service Name** | `MaxLabJupyterLab` |
+| **Directory** | `D:\apps\MaxLab` |
 | **Service Type** | Windows Service |
 | **Auto Start** | Yes (starts on reboot) |
 | **Auto Restart** | Yes (on crash) |
 | **Restart Delay** | 5 seconds |
 | **Log Location** | `D:\apps\MaxLab\logs\service\` |
-| **Port** | 8888 (from `JUPYTER_PORT`) |
+| **Port** | 8888 (from `JUPYTER_PORT` in `.env`) |
 | **Environment** | `maxlab` conda environment |
+
+### Test Service
+
+| Property | Value |
+|----------|-------|
+| **Service Name** | `MaxLabJupyterLabTest` |
+| **Directory** | `D:\apps\MaxLabTest` |
+| **Service Type** | Windows Service |
+| **Auto Start** | Yes (starts on reboot) |
+| **Auto Restart** | Yes (on crash) |
+| **Restart Delay** | 5 seconds |
+| **Log Location** | `D:\apps\MaxLabTest\logs\service\` |
+| **Port** | 8889 (from `JUPYTER_PORT` in `.env`, must differ from production) |
+| **Environment** | `maxlab` conda environment |
+
+## Important: Port Configuration
+
+To run both services simultaneously, they must use different ports. Configure in each deployment's `.env` file:
+
+**Production `.env` (D:\apps\MaxLab\.env):**
+```
+JUPYTER_PORT=8888
+```
+
+**Test `.env` (D:\apps\MaxLabTest\.env):**
+```
+JUPYTER_PORT=8889
+```
+
+If ports conflict, one service will fail to start. See [Troubleshooting](#port-already-in-use) section for solutions.
 
 ## Managing the Service
 
 ### Check Service Status
+
+**Production:**
 ```powershell
 # Using Windows Services
 Get-Service MaxLabJupyterLab
@@ -41,12 +88,23 @@ Get-Service MaxLabJupyterLab
 nssm status MaxLabJupyterLab
 ```
 
+**Test:**
+```powershell
+# Using Windows Services
+Get-Service MaxLabJupyterLabTest
+
+# Using NSSM (detailed)
+nssm status MaxLabJupyterLabTest
+```
+
 **Output meanings:**
 - `Running` = Service is active, JupyterLab is running
 - `Stopped` = Service is not running
 - `Paused` = Service is paused
 
 ### Start the Service
+
+**Production:**
 ```powershell
 # Using Windows Services
 Start-Service MaxLabJupyterLab
@@ -55,7 +113,18 @@ Start-Service MaxLabJupyterLab
 nssm start MaxLabJupyterLab
 ```
 
+**Test:**
+```powershell
+# Using Windows Services
+Start-Service MaxLabJupyterLabTest
+
+# Or using NSSM
+nssm start MaxLabJupyterLabTest
+```
+
 ### Stop the Service
+
+**Production:**
 ```powershell
 # Using Windows Services
 Stop-Service MaxLabJupyterLab -Force
@@ -64,7 +133,18 @@ Stop-Service MaxLabJupyterLab -Force
 nssm stop MaxLabJupyterLab
 ```
 
+**Test:**
+```powershell
+# Using Windows Services
+Stop-Service MaxLabJupyterLabTest -Force
+
+# Or using NSSM
+nssm stop MaxLabJupyterLabTest
+```
+
 ### Restart the Service
+
+**Production:**
 ```powershell
 # Using Windows Services
 Restart-Service MaxLabJupyterLab
@@ -73,14 +153,32 @@ Restart-Service MaxLabJupyterLab
 nssm restart MaxLabJupyterLab
 ```
 
+**Test:**
+```powershell
+# Using Windows Services
+Restart-Service MaxLabJupyterLabTest
+
+# Or using NSSM
+nssm restart MaxLabJupyterLabTest
+```
+
 ## Viewing Logs
 
 ### View Recent Logs (Last 50 Lines)
+
+**Production:**
 ```powershell
 Get-Content "D:\apps\MaxLab\logs\service\jupyterlab-stdout.log" -Tail 50
 ```
 
+**Test:**
+```powershell
+Get-Content "D:\apps\MaxLabTest\logs\service\jupyterlab-stdout.log" -Tail 50
+```
+
 ### Follow Logs in Real-Time (Tail)
+
+**Production:**
 ```powershell
 # Using Get-Content with -Wait (Ctrl+C to stop)
 Get-Content "D:\apps\MaxLab\logs\service\jupyterlab-stdout.log" -Tail 1 -Wait
@@ -89,15 +187,32 @@ Get-Content "D:\apps\MaxLab\logs\service\jupyterlab-stdout.log" -Tail 1 -Wait
 tail -f "D:\apps\MaxLab\logs\service\jupyterlab-stdout.log"
 ```
 
+**Test:**
+```powershell
+# Using Get-Content with -Wait (Ctrl+C to stop)
+Get-Content "D:\apps\MaxLabTest\logs\service\jupyterlab-stdout.log" -Tail 1 -Wait
+
+# Or use PowerShell tail (if available)
+tail -f "D:\apps\MaxLabTest\logs\service\jupyterlab-stdout.log"
+```
+
 ### View Error Logs
+
+**Production:**
 ```powershell
 Get-Content "D:\apps\MaxLab\logs\service\jupyterlab-stderr.log" -Tail 50
 ```
 
+**Test:**
+```powershell
+Get-Content "D:\apps\MaxLabTest\logs\service\jupyterlab-stderr.log" -Tail 50
+```
+
 ### View Windows Event Viewer Logs
+
 1. Open **Event Viewer** (`eventvwr.msc`)
 2. Navigate to **Windows Logs** → **Application**
-3. Filter for events with source `MaxLabJupyterLab`
+3. Filter for events with source `MaxLabJupyterLab` or `MaxLabJupyterLabTest`
 
 ## Log Rotation
 
@@ -138,21 +253,35 @@ Log files:
 
 ### Port Already in Use
 
-**Symptom**: Logs show "Address already in use" for port 8888
+**Symptom**: Logs show "Address already in use" for port 8888 or 8889
 
-**Solution 1 - Find and stop conflicting process:**
+**Common cause with dual services**: Both production and test services trying to use the same port.
+
+**Solution 1 - Check which service/process is using the port:**
 ```powershell
+# Check port 8888
 netstat -ano | findstr :8888
-taskkill /PID <PID> /F
+
+# Check port 8889
+netstat -ano | findstr :8889
 ```
 
-**Solution 2 - Use different port:**
-1. Edit `.env` file:
+**Solution 2 - Ensure production and test use different ports:**
+1. Edit production `.env` file (`D:\apps\MaxLab\.env`):
    ```
-   JUPYTER_PORT=9000
+   JUPYTER_PORT=8888
    ```
-2. Restart service:
+2. Edit test `.env` file (`D:\apps\MaxLabTest\.env`):
+   ```
+   JUPYTER_PORT=8889
+   ```
+3. Restart both services:
    ```powershell
+   Restart-Service MaxLabJupyterLab
+   Restart-Service MaxLabJupyterLabTest
+   ```
+
+If you need to use different ports, make sure both `.env` files have unique values.
    Restart-Service MaxLabJupyterLab
    ```
 
