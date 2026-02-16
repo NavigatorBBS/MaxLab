@@ -51,11 +51,86 @@ function Find-NSSM {
         }
     }
 
-    # Not found
-    Write-Status "NSSM not found in common locations" "error"
+    # Not found - attempt auto-installation via winget
+    Write-Status "NSSM not found, attempting auto-install via winget..." "warning"
     Write-Output ""
-    Write-Output "Install NSSM using Chocolatey:"
+    
+    try {
+        Write-Status "Running: winget install nssm" "info"
+        $output = winget install nssm -e --accept-source-agreements 2>&1
+        Start-Sleep -Seconds 2
+        
+        # Try to find it again after install attempt
+        foreach ($path in $searchPaths) {
+            if (Test-Path $path) {
+                Write-Status "NSSM installed successfully at: $path" "success"
+                return $path
+            }
+        }
+        
+        # Check PATH after install
+        try {
+            $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
+            if ($nssmExe) {
+                Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
+                return $nssmExe.Source
+            }
+        } catch {
+            # Continue to error handling
+        }
+        
+        Write-Status "winget install completed but NSSM not found, trying chocolatey..." "warning"
+    } catch {
+        Write-Status "winget auto-install failed: $_" "warning"
+    }
+
+    # Fallback: Try chocolatey
+    Write-Output ""
+    Write-Status "Attempting installation via Chocolatey..." "info"
+    
+    try {
+        Write-Status "Running: choco install nssm -y" "info"
+        choco install nssm -y 2>&1 | Out-Null
+        Start-Sleep -Seconds 2
+        
+        # Try to find it again after choco install
+        foreach ($path in $searchPaths) {
+            if (Test-Path $path) {
+                Write-Status "NSSM installed successfully at: $path" "success"
+                return $path
+            }
+        }
+        
+        # Check PATH after install
+        try {
+            $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
+            if ($nssmExe) {
+                Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
+                return $nssmExe.Source
+            }
+        } catch {
+            # Continue to error handling
+        }
+        
+        Write-Status "Chocolatey install completed but NSSM not found" "warning"
+    } catch {
+        Write-Status "Chocolatey auto-install failed: $_" "warning"
+    }
+
+    # If we get here, both auto-install attempts failed
+    Write-Output ""
+    Write-Status "NSSM could not be auto-installed. Please install manually:" "error"
+    Write-Output ""
+    Write-Output "Option 1 - Using Chocolatey (Recommended):"
     Write-Output "  choco install nssm -y"
+    Write-Output ""
+    Write-Output "Option 2 - Using Windows Package Manager:"
+    Write-Output "  winget install nssm"
+    Write-Output ""
+    Write-Output "Option 3 - Manual Installation:"
+    Write-Output "  1. Download from: https://nssm.cc/download"
+    Write-Output "  2. Extract to C:\Program Files\NSSM"
+    Write-Output "  3. Add C:\Program Files\NSSM to PATH environment variable"
     Write-Output ""
     exit 1
 }

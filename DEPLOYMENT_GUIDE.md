@@ -86,6 +86,7 @@ These jobs run **once** regardless of which branch is deployed. Both deployment 
 4. Verify critical files exist
 5. Generate deployment summary
 6. Setup MaxLabJupyterLab service with NSSM
+   (Auto-installs NSSM via winget if not found)
 ```
 
 Runs automatically on: `git push origin main` or manual workflow dispatch with branch=main
@@ -98,6 +99,7 @@ Runs automatically on: `git push origin main` or manual workflow dispatch with b
 4. Verify critical files exist
 5. Generate deployment summary
 6. Setup MaxLabJupyterLabTest service with NSSM
+   (Auto-installs NSSM via winget if not found)
 ```
 
 Runs automatically on: `git push origin test` or manual workflow dispatch with branch=test
