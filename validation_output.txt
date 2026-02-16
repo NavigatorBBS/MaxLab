@@ -1,0 +1,42 @@
+
+e[38;2;33;150;243mMaxLab Deployment Readiness Checke[0m
+==================================================
+
+Checking NSSM installation...
+e[38;2;76;175;80mNSSM found: NSSM 2.24-101-g897c7ad 64-bit 2017-04-26e[0m
+Checking Git installation...
+e[38;2;76;175;80mgit version 2.53.0.windows.1e[0m
+Checking Conda installation...
+e[38;2;76;175;80mConda founde[0m
+Checking maxlab conda environment...
+e[38;2;76;175;80mmaxlab environment existse[0m
+Checking JupyterLab installation...
+e[38;2;76;175;80mJupyterLab found in maxlab environmente[0m
+Checking deployment directory permissions...
+e[38;2;255;152;0mParent directory doesn't exist: D:\apps (will be created)e[0m
+e[38;2;255;152;0mParent directory doesn't exist: D:\apps (will be created)e[0m
+Checking network connectivity...
+e[38;2;76;175;80mCan reach GitHub (needed for git clone)e[0m
+Checking disk space...
+e[38;2;255;152;0mCould not check disk spacee[0m
+Checking GitHub Actions runner...
+e[38;2;255;152;0mGitHub Actions runner not detected (might not be started)e[0m
+Checking port availability...
+e[38;2;76;175;80mPort 8888 is availablee[0m
+e[38;2;76;175;80mPort 8889 is availablee[0m
+Checking Tailscale installation...
+e[38;2;76;175;80mTailscale installed and respondinge[0m
+Checking Tailscale auth secrets configuration...
+e[38;2;255;152;0mTailscale secrets not found in current environmente[0m
+
+==================================================
+VALIDATION SUMMARY
+==================================================
+e[38;2;76;175;80mPassed: 9e[0m
+
+e[38;2;255;152;0mISSUES TO RESOLVE:e[0m
+
+  - Runner Status: Start GitHub Actions runner service if deployments should be automatic
+  - Tailscale Secrets: Add TAILSCALE_AUTHKEY to GitHub repo Settings Secrets Actions (production and test environments)
+
+e[38;2;33;150;243mAfter fixing issues, run this script again to verify.e[0m
