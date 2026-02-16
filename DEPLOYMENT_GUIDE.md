@@ -1,5 +1,23 @@
 # MaxLab GitHub Actions Deployment Guide
 
+## Prerequisites
+
+⚠️ **Before deploying**, ensure your Windows server runner is fully configured.
+
+Follow the [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) to:
+- Install required software (NSSM, Git, Conda, **Tailscale**)
+- Run `setup.ps1` to create maxlab environment
+- Configure Tailscale auth secrets
+
+**Quick check**:
+```powershell
+.\scripts\validate-deployment-ready.ps1
+```
+
+The validation script automatically finds conda in standard locations and checks all requirements. All checks must pass before attempting deployment.
+
+---
+
 ## Overview
 
 MaxLab supports **dual-environment deployment**:

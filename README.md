@@ -206,10 +206,23 @@ MaxLab supports **automated deployment to Windows servers** via GitHub Actions:
 - **Test environment**: Deploys from `test` branch to `D:\apps\MaxLabTest`
 - **Automatic triggers**: Deployments trigger on push or manual workflow dispatch
 - **Service management**: JupyterLab runs as Windows services using NSSM
+- **Secure access**: Access via Tailscale private network (tailnet)
 
-For complete deployment setup and management instructions, see:
-- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
-- [NSSM Service Guide](NSSM_SETUP.md) - Windows service management and troubleshooting
+### Getting Started with Deployment
+
+1. **First-time setup**: Follow the [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
+   - Validates all dependencies are installed (including Tailscale)
+   - Includes automated validation script
+   - Configure Tailscale auth secrets
+   
+2. **Deployment instructions**: See [Deployment Guide](DEPLOYMENT_GUIDE.md)
+   - Step-by-step deployment process
+   - Manual and automatic triggers
+   
+3. **Service management**: See [NSSM Service Guide](NSSM_SETUP.md)
+   - Service management commands
+   - Troubleshooting and logs
+   - Port configuration for dual environments
 
 ---
 
