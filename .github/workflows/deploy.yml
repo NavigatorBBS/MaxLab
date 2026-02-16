@@ -193,6 +193,7 @@ jobs:
           
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+
        - name: Setup MaxLab Environment
          shell: pwsh
          run: |
