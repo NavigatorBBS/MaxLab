@@ -91,17 +91,41 @@ When running the workflow, you can specify:
 
 ## After Deployment
 
-Once deployment completes successfully, on your Windows server:
+The deployment workflow now **automatically sets up JupyterLab as a Windows service** using NSSM. 
+
+### Service Status
+JupyterLab will be running as the `MaxLabJupyterLab` service. To check:
+
+```powershell
+Get-Service MaxLabJupyterLab
+```
+
+### First-Time Setup (if needed)
+If this is the first deployment, you may need to run setup on your Windows server:
 
 ```powershell
 cd D:\apps\MaxLab
-
-# First time only: Run setup
 ./setup.ps1
-
-# Start JupyterLab
-./start.ps1
 ```
+
+### Manual Operations (optional)
+To manage the service manually:
+
+```powershell
+# Check status
+Get-Service MaxLabJupyterLab
+
+# Stop service
+Stop-Service MaxLabJupyterLab
+
+# Start service
+Start-Service MaxLabJupyterLab
+
+# Restart service
+Restart-Service MaxLabJupyterLab
+```
+
+See [NSSM_SETUP.md](NSSM_SETUP.md) for complete service management and troubleshooting.
 
 ## Workflow Features
 

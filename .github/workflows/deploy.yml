@@ -182,6 +182,22 @@ jobs:
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
 
+      - name: Setup NSSM JupyterLab Service
+        id: nssm-setup
+        shell: pwsh
+        run: |
+          $deployPath = "D:\apps\MaxLab"
+          $setupScript = Join-Path $deployPath "scripts\setup-nssm-service.ps1"
+          
+          Write-Output "Setting up NSSM service..."
+          & $setupScript -DeployPath $deployPath -ServiceName "MaxLabJupyterLab"
+          
+          if ($LASTEXITCODE -eq 0) {
+            echo "nssm_status=success" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "nssm_status=failed" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Deployment notification
         if: success()
         shell: pwsh
@@ -190,3 +206,10 @@ jobs:
           Write-Output "MaxLab is now available at: D:\apps\MaxLab"
           Write-Output "Branch: ${{ steps.deploy-info.outputs.branch }}"
           Write-Output "Commit: ${{ steps.deploy-info.outputs.commit_hash }}"
+          Write-Output ""
+          if ("${{ steps.nssm-setup.outputs.nssm_status }}" -eq "success") {
+            Write-Output "✓ JupyterLab service is running as MaxLabJupyterLab"
+            Write-Output "  Access: http://localhost:8888 (or via Tailscale)"
+          } else {
+            Write-Output "⚠ NSSM setup encountered issues. Check the logs above."
+          }
