@@ -194,10 +194,10 @@ jobs:
           # Also write to GitHub Actions summary
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
 
-       - name: Stop and Remove Existing NSSM Service
-         shell: pwsh
-         run: |
-           $serviceName = "${{ env.SERVICE_NAME }}"
+      - name: Stop and Remove Existing NSSM Service
+        shell: pwsh
+        run: |
+          $serviceName = "${{ env.SERVICE_NAME }}"
            
            Write-Output "Checking for existing NSSM service: $serviceName"
            $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
@@ -226,28 +226,28 @@ jobs:
              Write-Output "No existing service found, proceeding..."
            }
 
-       - name: Configure Environment (.env)
-         shell: pwsh
-         run: |
-           $deployPath = "${{ env.DEPLOY_PATH }}"
-           $serviceName = "${{ env.SERVICE_NAME }}"
-           $envFile = Join-Path $deployPath ".env"
-           
-           # Determine port based on service name
-           $port = if ($serviceName -match "Test") { 8889 } else { 8888 }
-           
-           Write-Output "Configuring .env for: $serviceName (port: $port)"
-           
-           # Create or update .env file
-           $envContent = @"
-           JUPYTER_PORT=$port
-           JUPYTER_NOTEBOOK_DIR=workspace
-           "@
-           
-           Set-Content -Path $envFile -Value $envContent -Force
-           Write-Output "✓ .env configured: $envFile"
+      - name: Configure Environment (.env)
+        shell: pwsh
+        run: |
+          $deployPath = "${{ env.DEPLOY_PATH }}"
+          $serviceName = "${{ env.SERVICE_NAME }}"
+          $envFile = Join-Path $deployPath ".env"
+          
+          # Determine port based on service name
+          $port = if ($serviceName -match "Test") { 8889 } else { 8888 }
+          
+          Write-Output "Configuring .env for: $serviceName (port: $port)"
+          
+          # Create or update .env file
+          $envContent = @"
+          JUPYTER_PORT=$port
+          JUPYTER_NOTEBOOK_DIR=workspace
+          "@
+          
+          Set-Content -Path $envFile -Value $envContent -Force
+          Write-Output "✓ .env configured: $envFile"
 
-       - name: Setup MaxLab Environment
+      - name: Setup MaxLab Environment
         shell: pwsh
         run: |
           $deployPath = "${{ env.DEPLOY_PATH }}"
