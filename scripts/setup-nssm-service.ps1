@@ -149,7 +149,7 @@ function Stop-ExistingService {
         }
         
         Write-Status "Removing old service..." "info"
-        & $NSS remove $ServiceName confirm
+        & "$NSS" remove $ServiceName confirm
         Start-Sleep -Seconds 1
     }
 }
@@ -181,15 +181,15 @@ function Create-Service {
     
     Write-Status "Creating NSSM service: $ServiceName" "info"
     
-    & $NSSM install $ServiceName $WrapperPath
-    & $NSSM set $ServiceName AppDirectory (Split-Path $WrapperPath -Parent)
-    & $NSSM set $ServiceName AppStdout "$LogsDir\jupyterlab-stdout.log"
-    & $NSSM set $ServiceName AppStderr "$LogsDir\jupyterlab-stderr.log"
-    & $NSSM set $ServiceName AppRotateFiles 1
-    & $NSSM set $ServiceName AppRotateOnline 1
-    & $NSSM set $ServiceName AppRotateSeconds 86400
-    & $NSSM set $ServiceName AppRotateBytes 10485760
-    & $NSSM set $ServiceName AppRestartDelay 5000
+    & "$NSSM" install $ServiceName $WrapperPath
+    & "$NSSM" set $ServiceName AppDirectory (Split-Path $WrapperPath -Parent)
+    & "$NSSM" set $ServiceName AppStdout "$LogsDir\jupyterlab-stdout.log"
+    & "$NSSM" set $ServiceName AppStderr "$LogsDir\jupyterlab-stderr.log"
+    & "$NSSM" set $ServiceName AppRotateFiles 1
+    & "$NSSM" set $ServiceName AppRotateOnline 1
+    & "$NSSM" set $ServiceName AppRotateSeconds 86400
+    & "$NSSM" set $ServiceName AppRotateBytes 10485760
+    & "$NSSM" set $ServiceName AppRestartDelay 5000
 }
 
 function Start-MaxLabService {
