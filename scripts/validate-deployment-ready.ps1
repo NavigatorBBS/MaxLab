@@ -36,7 +36,7 @@ $colors = @{
 function Write-Status {
     param([string]$Message, [string]$Type = "info")
     $color = $colors[$Type]
-    Write-Output "$color$Message$($colors.reset)"
+    Write-Host "$color$Message$($colors.reset)"
 }
 
 function Test-Command {

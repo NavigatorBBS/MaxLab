@@ -17,7 +17,7 @@ $colors = @{
 function Write-Status {
     param([string]$Message, [string]$Type = "info")
     $color = $colors[$Type]
-    Write-Output "$color$Message$($colors.reset)"
+    Write-Host "$color$Message$($colors.reset)"
 }
 
 function Find-NSSM {
@@ -26,8 +26,7 @@ function Find-NSSM {
         $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
         if ($nssmExe) {
             Write-Status "Found NSSM in PATH: $($nssmExe.Source)" "success"
-            $nssmExe.Source | Write-Output
-            return
+            return $nssmExe.Source
         }
     } catch {
         # Continue to search
@@ -48,8 +47,7 @@ function Find-NSSM {
     foreach ($path in $searchPaths) {
         if (Test-Path $path) {
             Write-Status "Found NSSM at: $path" "success"
-            $path | Write-Output
-            return
+            return $path
         }
     }
 
@@ -66,8 +64,7 @@ function Find-NSSM {
         foreach ($path in $searchPaths) {
             if (Test-Path $path) {
                 Write-Status "NSSM installed successfully at: $path" "success"
-                $path | Write-Output
-                return
+                return $path
             }
         }
         
@@ -76,8 +73,7 @@ function Find-NSSM {
             $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
             if ($nssmExe) {
                 Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
-                $nssmExe.Source | Write-Output
-                return
+                return $nssmExe.Source
             }
         } catch {
             # Continue to error handling
@@ -101,8 +97,7 @@ function Find-NSSM {
         foreach ($path in $searchPaths) {
             if (Test-Path $path) {
                 Write-Status "NSSM installed successfully at: $path" "success"
-                $path | Write-Output
-                return
+                return $path
             }
         }
         
@@ -111,8 +106,7 @@ function Find-NSSM {
             $nssmExe = Get-Command nssm.exe -ErrorAction SilentlyContinue
             if ($nssmExe) {
                 Write-Status "Found NSSM in PATH after install: $($nssmExe.Source)" "success"
-                $nssmExe.Source | Write-Output
-                return
+                return $nssmExe.Source
             }
         } catch {
             # Continue to error handling
