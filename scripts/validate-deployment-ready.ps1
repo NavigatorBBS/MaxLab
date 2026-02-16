@@ -98,7 +98,7 @@ if (Test-Command "nssm.exe") {
 } else {
     Write-Status "NSSM not found in PATH" "error"
     $checks_failed++
-    $issues += "NSSM Installation: Run: choco install nssm OR download from https://nssm.cc/download"
+    $issues += "NSSM Installation: Run 'winget install nssm' or 'choco install nssm -y' or download from https://nssm.cc/download"
 }
 
 # Check 2: Git Installation

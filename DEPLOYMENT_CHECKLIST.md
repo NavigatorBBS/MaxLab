@@ -104,10 +104,15 @@ cd C:\Users\chris\code\MaxLab
 # Check installation
 nssm.exe --version
 
-# If not found, install via Chocolatey (recommended):
+# If not found, installation options (in order of preference):
+
+# Option 1: Windows Package Manager (winget) - Modern Windows systems
+winget install nssm
+
+# Option 2: Chocolatey (most reliable)
 choco install nssm -y
 
-# OR download manually:
+# Option 3: Manual download and extraction
 # 1. Download: https://nssm.cc/download
 # 2. Extract to: C:\tools\nssm\
 # 3. Add to PATH:
@@ -364,12 +369,15 @@ netstat -ano | findstr LISTENING | findstr :8889
 
 **Cause**: NSSM isn't installed or not in PATH
 
-**Solution**:
+**Solution**: The deployment script will automatically attempt installation. If auto-install doesn't work:
 ```powershell
-# Install NSSM
+# Option 1: Windows Package Manager
+winget install nssm
+
+# Option 2: Chocolatey (most reliable)
 choco install nssm -y
 
-# OR add to PATH manually
+# Option 3: Add to PATH manually (if already installed)
 $path = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
 [Environment]::SetEnvironmentVariable("Path", "$path;C:\tools\nssm\win64", [EnvironmentVariableTarget]::Machine)
 
