@@ -6,7 +6,6 @@
 
 Follow the [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) to:
 - Install required software (NSSM, Git, Conda, **Tailscale**)
-- **Add conda to PATH** (critical for validation script)
 - Run `setup.ps1` to create maxlab environment
 - Configure Tailscale auth secrets
 
@@ -15,7 +14,7 @@ Follow the [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) to:
 .\scripts\validate-deployment-ready.ps1
 ```
 
-All checks must pass before attempting deployment.
+The validation script automatically finds conda in standard locations and checks all requirements. All checks must pass before attempting deployment.
 
 ---
 

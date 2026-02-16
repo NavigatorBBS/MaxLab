@@ -5,9 +5,9 @@
     
 .DESCRIPTION
     Checks all required dependencies and configurations for successful deployment:
-    - NSSM installation and PATH
+    - NSSM installation
     - Git installation
-    - Conda installation and PATH
+    - Conda installation (searches standard paths)
     - maxlab conda environment (created by setup.ps1)
     - Directory permissions
     - Network connectivity
@@ -49,6 +49,36 @@ function Test-Command {
     }
 }
 
+function Find-CondaPath {
+    # Search common conda installation locations
+    $search_paths = @(
+        "C:\Program Files\Miniconda3\Scripts\conda.exe",
+        "C:\Program Files\Miniconda3",
+        "C:\Miniconda3\Scripts\conda.exe",
+        "C:\Miniconda3",
+        "$env:USERPROFILE\Miniconda3\Scripts\conda.exe",
+        "$env:USERPROFILE\Miniconda3",
+        "$env:USERPROFILE\AppData\Local\Miniconda3\Scripts\conda.exe",
+        "$env:USERPROFILE\AppData\Local\Miniconda3"
+    )
+    
+    foreach ($path in $search_paths) {
+        # Check for conda.exe directly
+        if ($path -like "*.exe" -and (Test-Path $path)) {
+            return $path
+        }
+        # Check for conda in Scripts subdirectory
+        if (-not ($path -like "*.exe")) {
+            $conda_exe = Join-Path $path "Scripts\conda.exe"
+            if (Test-Path $conda_exe) {
+                return $conda_exe
+            }
+        }
+    }
+    
+    return $null
+}
+
 Write-Output ""
 Write-Status "MaxLab Deployment Readiness Check" "info"
 Write-Output "=================================================="
@@ -57,6 +87,7 @@ Write-Output ""
 $checks_passed = 0
 $checks_failed = 0
 $issues = @()
+$conda_path = $null
 
 # Check 1: NSSM Installation
 Write-Output "Checking NSSM installation..."
@@ -82,26 +113,34 @@ if (Test-Command "git") {
     $issues += "Git Installation: Run: choco install git"
 }
 
-# Check 3: Conda Installation
+# Check 3: Conda Installation (search standard paths)
 Write-Output "Checking Conda installation..."
-if (Test-Command "conda") {
-    Write-Status "Conda found" "success"
+$conda_path = Find-CondaPath
+if ($conda_path) {
+    Write-Status "Conda found at: $conda_path" "success"
+    $checks_passed++
     
     # Check 4: maxlab environment
     Write-Output "Checking maxlab conda environment..."
-    $env_exists = & conda env list | Select-String "maxlab"
-    if ($env_exists) {
-        Write-Status "maxlab environment exists" "success"
-        $checks_passed += 2
-    } else {
+    try {
+        $env_exists = & "$conda_path" env list 2>&1 | Select-String "maxlab"
+        if ($env_exists) {
+            Write-Status "maxlab environment exists" "success"
+            $checks_passed++
+        } else {
+            Write-Status "maxlab environment not found" "error"
+            $checks_failed++
+            $issues += "Conda Environment: Run on server: .\setup.ps1"
+        }
+    } catch {
         Write-Status "maxlab environment not found" "error"
         $checks_failed++
         $issues += "Conda Environment: Run on server: .\setup.ps1"
     }
 } else {
-    Write-Status "Conda not found" "error"
+    Write-Status "Conda not found in standard locations" "error"
     $checks_failed += 2
-    $issues += "Conda Installation: Install Miniconda3 from https://docs.conda.io/projects/miniconda/en/latest/"
+    $issues += "Conda Installation: Install Miniconda3 from https://docs.conda.io/projects/miniconda/en/latest/ or download from https://repo.anaconda.com/miniconda/"
 }
 
 # Check 5: Directory permissions

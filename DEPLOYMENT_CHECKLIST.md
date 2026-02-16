@@ -58,55 +58,20 @@ choco install git -y
 **Required for**: Python environment, conda, JupyterLab
 
 ```powershell
-# Check installation
-conda --version
-
-# If not installed:
+# The validation script searches standard locations automatically
+# If not installed, install from one of these locations:
 # 1. Download: https://docs.conda.io/projects/miniconda/en/latest/
-# 2. Install to: C:\Users\<username>\miniconda3
-# 3. Restart terminal/runner for PATH to update
-```
+# 2. Or: https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+# 3. Install to standard location (script searches these):
+#    - C:\Program Files\Miniconda3
+#    - C:\Miniconda3
+#    - C:\Users\<username>\Miniconda3
 
-**Important**: Restart your GitHub Actions runner after installing Miniconda3.
-
----
-
-#### 2a. Add Conda to PATH (Critical)
-
-**Why**: The validation script and deployment process require `conda` to be in your system PATH.
-
-**Check if conda is in PATH:**
-```powershell
-conda --version
-```
-
-If this works, conda is already in PATH. If not, add it manually:
-
-```powershell
-# Find conda installation location
-Get-ChildItem -Path "C:\Users" -Filter "miniconda3" -Recurse -Directory
-
-# Example: If installed at C:\Users\chris\miniconda3
-# Add to PATH (run as Administrator):
-$path = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
-if ($path -notlike "*miniconda3*") {
-    [Environment]::SetEnvironmentVariable(
-        "Path",
-        "$path;C:\Users\chris\miniconda3;C:\Users\chris\miniconda3\Scripts",
-        [EnvironmentVariableTarget]::Machine
-    )
-}
-
-# After adding to PATH, RESTART the GitHub Actions runner service
+# After installation, restart the GitHub Actions runner
 Restart-Service "GitHub*"
 ```
 
-**Verify it worked:**
-```powershell
-# Restart PowerShell first
-$env:Path -split ";" | findstr miniconda3
-# Should show your miniconda3 path
-```
+**Note**: The validation script automatically searches common conda installation directories. You don't need to add conda to PATH manually.
 
 ---
 
