@@ -160,13 +160,44 @@ function Create-ServiceWrapper {
     $logsDir = Join-Path $DeployPath "logs" "service"
     New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
     
-    $wrapperPath = Join-Path $DeployPath "run-jupyter.cmd"
+    $wrapperPath = Join-Path $DeployPath "run-jupyter.ps1"
     
     $wrapperContent = @"
-@echo off
-cd /D "$DeployPath"
-call conda activate maxlab
-jupyter lab --no-browser --ip=0.0.0.0 --port=8888
+# MaxLab JupyterLab Service Wrapper
+# Loads environment and runs start.ps1
+param()
+
+`$ErrorActionPreference = "Stop"
+`$deployPath = "$DeployPath"
+`$logsDir = "$logsDir"
+
+# Change to deployment directory
+Set-Location `$deployPath
+
+# Load .env variables
+`$envPath = Join-Path `$deployPath ".env"
+if (Test-Path `$envPath) {
+    Get-Content `$envPath | ForEach-Object {
+        `$line = `$_.Trim()
+        if (-not `$line -or `$line.StartsWith("#")) { return }
+        if (`$line -match "^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$") {
+            `$name = `$matches[1]
+            `$value = `$matches[2].Trim('"''')
+            `$existing = Get-Item -Path "Env:\`$name" -ErrorAction SilentlyContinue
+            if (`$null -eq `$existing -or [string]::IsNullOrWhiteSpace(`$existing.Value)) {
+                Set-Item -Path "Env:\`$name" -Value `$value
+            }
+        }
+    }
+}
+
+# Execute start.ps1
+try {
+    & .\start.ps1 2>&1 | Tee-Object -FilePath "`$logsDir\jupyter.log"
+} catch {
+    `$error[0] | Out-File -FilePath "`$logsDir\error.log" -Append
+    throw
+}
 "@
     
     Set-Content -Path $wrapperPath -Value $wrapperContent -Force
