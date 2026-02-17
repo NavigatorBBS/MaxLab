@@ -205,7 +205,7 @@ MaxLab supports **automated deployment to Windows servers** via GitHub Actions:
 - **Production environment**: Deploys from `main` branch to `D:\apps\MaxLab`
 - **Test environment**: Deploys from `test` branch to `D:\apps\MaxLabTest`
 - **Automatic triggers**: Deployments trigger on push or manual workflow dispatch
-- **Service management**: JupyterLab runs as Windows services using Servy
+- **Service management**: JupyterLab runs via Windows Task Scheduler (native, no third-party tools)
 - **Secure access**: Access via Tailscale private network (tailnet)
 
 ### Getting Started with Deployment
@@ -219,7 +219,7 @@ MaxLab supports **automated deployment to Windows servers** via GitHub Actions:
    - Step-by-step deployment process
    - Manual and automatic triggers
    
-3. **Service management**: See [Servy Service Guide](SERVY_SETUP.md)
+3. **Task management**: See [Scheduled Task Guide](SCHEDULED_TASK_SETUP.md)
    - Service management commands
    - Troubleshooting and logs
    - Port configuration for dual environments

@@ -5,7 +5,6 @@
     
 .DESCRIPTION
     Checks all required dependencies and configurations for successful deployment:
-    - Servy installation
     - Git installation
     - Conda installation (searches standard paths)
     - maxlab conda environment (created by setup.ps1)
@@ -89,18 +88,7 @@ $checks_failed = 0
 $issues = @()
 $conda_path = $null
 
-# Check 1: Servy Installation
-Write-Output "Checking Servy installation..."
-if (Test-Command "servy-cli.exe") {
-    Write-Status "Servy CLI found" "success"
-    $checks_passed++
-} else {
-    Write-Status "Servy not found in PATH" "error"
-    $checks_failed++
-    $issues += "Servy Installation: Run 'winget install -e --id aelassas.Servy' or 'choco install servy -y' or download from https://github.com/aelassas/servy/releases"
-}
-
-# Check 2: Git Installation
+# Check 1: Git Installation
 Write-Output "Checking Git installation..."
 if (Test-Command "git") {
     $git_version = & git --version
@@ -112,14 +100,14 @@ if (Test-Command "git") {
     $issues += "Git Installation: Run: choco install git"
 }
 
-# Check 3: Conda Installation (search standard paths)
+# Check 2: Conda Installation (search standard paths)
 Write-Output "Checking Conda installation..."
 $conda_path = Find-CondaPath
 if ($conda_path) {
     Write-Status "Conda found at: $conda_path" "success"
     $checks_passed++
     
-    # Check 4: maxlab environment
+    # Check 3: maxlab environment
     Write-Output "Checking maxlab conda environment..."
     try {
         $env_exists = & "$conda_path" env list 2>&1 | Select-String "maxlab"
@@ -142,7 +130,7 @@ if ($conda_path) {
     $issues += "Conda Installation: Install Miniconda3 from https://docs.conda.io/projects/miniconda/en/latest/ or download from https://repo.anaconda.com/miniconda/"
 }
 
-# Check 5: Directory permissions
+# Check 4: Directory permissions
 Write-Output "Checking deployment directory permissions..."
 $deploy_dirs = @("D:\apps\MaxLab", "D:\apps\MaxLabTest")
 $perms_ok = $true
@@ -171,7 +159,7 @@ if ($perms_ok) {
     $issues += "Directory Permissions: Ensure user running runner has write access to D:\apps\"
 }
 
-# Check 6: Network connectivity
+# Check 5: Network connectivity
 Write-Output "Checking network connectivity..."
 try {
     $test = Invoke-WebRequest -Uri "https://github.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue
@@ -187,7 +175,7 @@ try {
     $issues += "Network Connectivity: Ensure server has internet access to github.com"
 }
 
-# Check 7: Disk space
+# Check 6: Disk space
 Write-Output "Checking disk space..."
 $disk = Get-Volume -DriveLetter D -ErrorAction SilentlyContinue
 if ($disk) {
@@ -203,7 +191,7 @@ if ($disk) {
     Write-Status "Could not check disk space" "warning"
 }
 
-# Check 8: GitHub Actions runner
+# Check 7: GitHub Actions runner
 Write-Output "Checking GitHub Actions runner..."
 $runner_process = Get-Process -Name "Runner.Listener" -ErrorAction SilentlyContinue
 if ($runner_process) {
@@ -214,7 +202,7 @@ if ($runner_process) {
     $issues += "Runner Status: Start GitHub Actions runner service if deployments should be automatic"
 }
 
-# Check 9: Port availability
+# Check 8: Port availability
 Write-Output "Checking port availability..."
 $ports = @(8888, 8889)
 $ports_ok = $true
@@ -240,7 +228,7 @@ if ($ports_ok) {
     $issues += "Port Availability: Kill existing processes using ports 8888/8889 or configure different ports in .env"
 }
 
-# Check 10: Tailscale Installation
+# Check 9: Tailscale Installation
 Write-Output "Checking Tailscale installation..."
 if (Test-Command "tailscale.exe") {
     try {
@@ -258,7 +246,7 @@ if (Test-Command "tailscale.exe") {
     $issues += "Tailscale Installation: Run: choco install tailscale OR download from https://tailscale.com/download"
 }
 
-# Check 11: Tailscale auth secrets in GitHub Actions
+# Check 10: Tailscale auth secrets in GitHub Actions
 Write-Output "Checking Tailscale auth secrets configuration..."
 $env_token = $env:TAILSCALE_AUTHKEY
 if ($env_token) {

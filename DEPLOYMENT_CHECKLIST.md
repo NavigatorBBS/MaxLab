@@ -96,42 +96,7 @@ cd C:\Users\chris\code\MaxLab
 
 ---
 
-#### 4. Servy (Windows Service Manager)
-
-**Required for**: Running JupyterLab as Windows service
-
-```powershell
-# Check installation
-servy-cli.exe help
-
-# If not found, installation options (in order of preference):
-
-# Option 1: Windows Package Manager (winget) - Modern Windows systems
-winget install -e --id aelassas.Servy
-
-# Option 2: Chocolatey
-choco install servy -y
-
-# Option 3: Manual download
-# 1. Download: https://github.com/aelassas/servy/releases
-# 2. Extract and add to PATH
-
-# After PATH change, RESTART the system or GitHub Actions runner service
-```
-
-**Troubleshooting**:
-- If Servy still not found after install, check PATH:
-  ```powershell
-  $env:Path -split ";" | findstr servy
-  ```
-- Restart GitHub Actions runner if not in PATH:
-  ```powershell
-  Restart-Service "GitHub*"
-  ```
-
----
-
-#### 5. JupyterLab (in maxlab environment)
+#### 4. JupyterLab (in maxlab environment)
 
 **Required for**: Deployment service
 
@@ -400,8 +365,8 @@ Stop-Process -Id <PID> -Force
 # Edit D:\apps\MaxLab\.env
 JUPYTER_PORT=9000
 
-# Restart service
-Restart-Service MaxLabJupyterLab
+# Restart task
+Start-ScheduledTask -TaskName "MaxLabJupyterLab-Startup"
 ```
 
 ### Deployment Validation Fails
@@ -425,7 +390,7 @@ If issues persist:
 
 2. **Review documentation**:
    - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Deployment instructions
-   - [SERVY_SETUP.md](SERVY_SETUP.md) - Service management
+   - [SCHEDULED_TASK_SETUP.md](SCHEDULED_TASK_SETUP.md) - Task management
 
 3. **Run validation script**: 
    ```powershell
@@ -441,7 +406,7 @@ When all items are checked:
 - ✅ Server is ready for first deployment
 - ✅ Run: `git push origin main` to test
 - ✅ Monitor GitHub Actions for deployment
-- ✅ Verify services are running
+- ✅ Verify tasks are running
 - ✅ Ready for ongoing automated deployments
 
 **Next**: See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for deployment instructions.

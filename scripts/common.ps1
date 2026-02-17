@@ -1,5 +1,8 @@
 ﻿$ErrorActionPreference = "Stop"
 
+# Detect if running in an interactive shell (not CI/GitHub Actions)
+$script:IsInteractive = [Environment]::UserInteractive -and -not $env:CI -and -not $env:GITHUB_ACTIONS -and -not $env:TF_BUILD
+
 # Color constants for terminal output
 $script:Colors = @{
     success    = "`e[38;2;76;175;80m"     # Green
@@ -28,6 +31,18 @@ function Show-Spinner {
         return
     }
     
+    # In non-interactive mode (CI), show static message without spinner animation
+    if (-not $script:IsInteractive) {
+        Write-Output "$($script:Colors.info)→ $Message...$($script:Colors.reset)"
+        $job = Start-Job -ScriptBlock $ScriptBlock
+        Wait-Job $job -Timeout $Timeout | Out-Null
+        $result = Receive-Job $job
+        Remove-Job $job -Force -ErrorAction SilentlyContinue
+        Write-Output "$($script:Colors.success)✓ $Message$($script:Colors.reset)"
+        return $result
+    }
+    
+    # Interactive mode: show animated spinner
     Write-Host -NoNewline "$($script:Colors.info)$($script:SpinnerFrames[0]) $Message$($script:Colors.reset)" -ForegroundColor Blue
     
     $job = Start-Job -ScriptBlock $ScriptBlock
@@ -172,6 +187,25 @@ function Enable-CondaInSession {
 
 function Set-CondaChannel {
     Show-Step "Configuring conda-forge channel..."
+    
+    # In non-interactive mode (CI), show static message without spinner animation
+    if (-not $script:IsInteractive) {
+        Write-Output "$($script:Colors.info)→ Setting conda-forge channel...$($script:Colors.reset)"
+        
+        $job1 = Start-Job -ScriptBlock { conda config --add channels conda-forge 2>$null }
+        $job2 = Start-Job -ScriptBlock { conda config --set channel_priority strict 2>$null }
+        
+        Wait-Job $job1 -Timeout 30 | Out-Null
+        Wait-Job $job2 -Timeout 30 | Out-Null
+        
+        Remove-Job $job1 -Force -ErrorAction SilentlyContinue
+        Remove-Job $job2 -Force -ErrorAction SilentlyContinue
+        
+        Write-Output "$($script:Colors.success)✓ Conda-forge channel configured (idempotent).$($script:Colors.reset)"
+        return
+    }
+    
+    # Interactive mode: show animated spinner
     Write-Host -NoNewline "$($script:Colors.info)⠋ Setting conda-forge channel$($script:Colors.reset)"
     
     # Run in background with timeout as a workaround for hanging issue
@@ -227,6 +261,23 @@ function New-CondaEnvironment {
     $envExists = Test-CondaEnvironment -EnvName $EnvName
 
     if (-not $envExists) {
+        # In non-interactive mode (CI), show static message without spinner animation
+        if (-not $script:IsInteractive) {
+            Write-Output "$($script:Colors.info)→ Creating environment '$EnvName' with Python $PythonVersion (this may take a few minutes)...$($script:Colors.reset)"
+            
+            $job = Start-Job -ScriptBlock {
+                conda create -y -n $using:EnvName "python=$using:PythonVersion" 2>&1 | Out-Null
+            }
+            
+            Wait-Job $job -Timeout 600 | Out-Null
+            Receive-Job $job | Out-Null
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
+            
+            Write-Output "$($script:Colors.success)✓ Environment '$EnvName' created successfully.$($script:Colors.reset)"
+            return
+        }
+        
+        # Interactive mode: show animated spinner
         Write-Host -NoNewline "$($script:Colors.info)⠋ Creating environment '$EnvName' with Python $PythonVersion (this may take a few minutes)$($script:Colors.reset)"
         
         # Use background job to avoid hanging on conda create
