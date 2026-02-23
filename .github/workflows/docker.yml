@@ -38,6 +38,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
+        if: startsWith(github.ref, 'refs/tags/')
         uses: docker/metadata-action@v5
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_REPOSITORY }}
@@ -46,10 +47,11 @@ jobs:
             type=sha,prefix=
 
       - name: Build and push
+        if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
