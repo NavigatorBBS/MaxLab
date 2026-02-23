@@ -213,13 +213,13 @@ Run MaxLab in a Docker container without installing Miniconda locally.
 
 ```bash
 # Build and run
-docker-compose up
+docker compose up
 
 # Run in background
-docker-compose up -d
+docker compose up -d
 
 # Stop
-docker-compose down
+docker compose down
 ```
 
 JupyterLab will be available at `http://localhost:8888`
@@ -230,7 +230,7 @@ JupyterLab will be available at `http://localhost:8888`
 # Build the image
 ./scripts/docker-build.ps1
 
-# Run with docker-compose
+# Run with docker compose
 ./scripts/docker-run.ps1
 ```
 
@@ -240,7 +240,8 @@ JupyterLab will be available at `http://localhost:8888`
    ```env
    DOCKERHUB_USERNAME=your-username
    DOCKERHUB_TOKEN=your-access-token
-   DOCKER_IMAGE_NAME=your-username/maxlab
+   DOCKER_REPOSITORY=maxlab
+   DOCKER_TAG=dev
    ```
 
 2. Push the image:
@@ -255,7 +256,9 @@ The Docker container respects these environment variables (set in `.env` or `doc
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JUPYTER_PORT` | `8888` | Port to expose JupyterLab |
-| `DOCKER_IMAGE_NAME` | `maxlab:latest` | Docker image name |
+| `DOCKERHUB_USERNAME` | `local` | Docker namespace/user |
+| `DOCKER_REPOSITORY` | `maxlab` | Docker repository name |
+| `DOCKER_TAG` | `latest` | Docker image tag used by `docker compose` |
 
 ### Volume Mounts
 

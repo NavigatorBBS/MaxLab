@@ -9,11 +9,11 @@ $colors = @{
     reset   = "`e[0m"
 }
 
-Write-Output "$($colors.info)→ Starting MaxLab container with docker-compose...$($colors.reset)"
+Write-Output "$($colors.info)→ Starting MaxLab container with docker compose...$($colors.reset)"
 
 Push-Location $repoRoot
 try {
-    docker-compose up --build
+    docker compose up --build
     if ($LASTEXITCODE -ne 0) {
         Write-Output "$($colors.error)✗ Failed to start container.$($colors.reset)"
         exit 1

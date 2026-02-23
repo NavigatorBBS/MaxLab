@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${DOCKER_IMAGE_NAME:-maxlab:latest}
+    image: ${DOCKERHUB_USERNAME:-local}/${DOCKER_REPOSITORY:-maxlab}:${DOCKER_TAG:-latest}
     container_name: maxlab
     ports:
       - "${JUPYTER_PORT:-8888}:8888"

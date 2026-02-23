@@ -1,5 +1,20 @@
 # Quick Reference: MaxLab GitHub Actions Deployment
 
+## 🐳 Docker Hub Image Variables
+
+Use these in `.env` for local image build/push:
+
+```env
+DOCKERHUB_USERNAME=your-username
+DOCKERHUB_TOKEN=your-access-token
+DOCKER_REPOSITORY=maxlab
+DOCKER_TAG=dev
+```
+
+- `./scripts/docker-build.ps1` builds `latest` and `DOCKER_TAG`.
+- `./scripts/docker-push.ps1` pushes both tags to Docker Hub.
+- `./scripts/docker-run.ps1` uses `docker compose up --build`.
+
 ## 🚀 Deploy in 3 Steps
 
 ### Step 1: Go to Actions

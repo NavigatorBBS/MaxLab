@@ -14,7 +14,8 @@ $colors = @{
 # Load environment variables from .env
 $dockerhubUsername = $null
 $dockerhubToken = $null
-$imageName = $null
+$dockerRepository = "maxlab"
+$customTag = "latest"
 
 if (-not (Test-Path $envPath)) {
     Write-Output "$($colors.error)✗ .env file not found. Copy .env.example to .env and configure Docker Hub credentials.$($colors.reset)"
@@ -36,7 +37,8 @@ Get-Content $envPath | ForEach-Object {
         switch ($name) {
             "DOCKERHUB_USERNAME" { $script:dockerhubUsername = $value }
             "DOCKERHUB_TOKEN" { $script:dockerhubToken = $value }
-            "DOCKER_IMAGE_NAME" { $script:imageName = $value }
+            "DOCKER_REPOSITORY" { $script:dockerRepository = $value }
+            "DOCKER_TAG" { $script:customTag = $value }
         }
     }
 }
@@ -53,9 +55,19 @@ if (-not $dockerhubToken -or $dockerhubToken -eq "your-dockerhub-access-token") 
     exit 1
 }
 
-if (-not $imageName -or $imageName -eq "your-username/maxlab") {
-    $imageName = "$dockerhubUsername/maxlab"
-    Write-Output "$($colors.warning)⚠ DOCKER_IMAGE_NAME not set, using: $imageName$($colors.reset)"
+if (-not $dockerRepository -or $dockerRepository -eq "your-dockerhub-repository") {
+    Write-Output "$($colors.error)✗ DOCKER_REPOSITORY not configured in .env$($colors.reset)"
+    exit 1
+}
+
+if (-not $customTag) {
+    $customTag = "latest"
+}
+
+$imageBase = "$dockerhubUsername/$dockerRepository"
+$tags = @("latest")
+if ($customTag -ne "latest") {
+    $tags += $customTag
 }
 
 Write-Output "$($colors.info)→ Logging in to Docker Hub as '$dockerhubUsername'...$($colors.reset)"
@@ -66,23 +78,41 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Output "$($colors.success)✓ Logged in to Docker Hub.$($colors.reset)"
 
-Write-Output "$($colors.info)→ Building image: $imageName...$($colors.reset)"
+Write-Output "$($colors.info)→ Building image: $imageBase with tags [$($tags -join ', ')]...$($colors.reset)"
 Push-Location $repoRoot
 try {
-    docker build -t "${imageName}:latest" .
+    $primaryImage = "${imageBase}:latest"
+    docker build -t $primaryImage .
     if ($LASTEXITCODE -ne 0) {
         Write-Output "$($colors.error)✗ Docker build failed.$($colors.reset)"
         exit 1
     }
+
+    foreach ($tag in $tags) {
+        if ($tag -eq "latest") { continue }
+        $taggedImage = "${imageBase}:${tag}"
+        docker tag $primaryImage $taggedImage
+        if ($LASTEXITCODE -ne 0) {
+            Write-Output "$($colors.error)✗ Failed to create tag: $taggedImage$($colors.reset)"
+            exit 1
+        }
+    }
+
     Write-Output "$($colors.success)✓ Image built successfully.$($colors.reset)"
 
     Write-Output "$($colors.info)→ Pushing image to Docker Hub...$($colors.reset)"
-    docker push "${imageName}:latest"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Output "$($colors.error)✗ Docker push failed.$($colors.reset)"
-        exit 1
+    foreach ($tag in $tags) {
+        $fullImage = "${imageBase}:${tag}"
+        docker push $fullImage
+        if ($LASTEXITCODE -ne 0) {
+            Write-Output "$($colors.error)✗ Docker push failed: $fullImage$($colors.reset)"
+            exit 1
+        }
     }
-    Write-Output "$($colors.success)✓ Image pushed to Docker Hub: ${imageName}:latest$($colors.reset)"
+    Write-Output "$($colors.success)✓ Image pushed to Docker Hub: ${imageBase}:latest$($colors.reset)"
+    if ($tags.Count -gt 1) {
+        Write-Output "$($colors.success)✓ Additional image pushed: ${imageBase}:$customTag$($colors.reset)"
+    }
 } finally {
     Pop-Location
     docker logout
