@@ -1,0 +1,40 @@
+# Git
+.git/
+.gitignore
+
+# Environment files (contain secrets)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+.jupyter_ystore.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local conda/venv
+.conda/
+venv/
+.venv/
+
+# Session state
+.copilot/

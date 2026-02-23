@@ -1,0 +1,15 @@
+services:
+  maxlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE_NAME:-maxlab:latest}
+    container_name: maxlab
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    volumes:
+      - ./workspace:/home/maxlab/workspace
+    environment:
+      - JUPYTER_PORT=8888
+      - JUPYTER_NOTEBOOK_DIR=/home/maxlab/workspace
+    restart: unless-stopped

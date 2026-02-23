@@ -198,6 +198,71 @@ To install additional packages at runtime within a notebook:
 
 ---
 
+## 🐳 Docker
+
+Run MaxLab in a Docker container without installing Miniconda locally.
+
+### Local workstation vs container startup
+
+- **Local workstation (Windows + Miniconda):** use `./setup.ps1` (one-time setup) and `./start.ps1` (launch JupyterLab).
+- **Container startup (Docker):** uses the Linux entrypoint script at `docker/entrypoint.sh`.
+- `setup.ps1` and `start.ps1` are PowerShell host scripts and are **not** executed inside the container.
+- If you change Docker image startup behavior, rebuild with `docker compose up --build`.
+
+### Quick Start with Docker Compose
+
+```bash
+# Build and run
+docker-compose up
+
+# Run in background
+docker-compose up -d
+
+# Stop
+docker-compose down
+```
+
+JupyterLab will be available at `http://localhost:8888`
+
+### Using PowerShell Scripts
+
+```powershell
+# Build the image
+./scripts/docker-build.ps1
+
+# Run with docker-compose
+./scripts/docker-run.ps1
+```
+
+### Push to Docker Hub
+
+1. Configure credentials in `.env`:
+   ```env
+   DOCKERHUB_USERNAME=your-username
+   DOCKERHUB_TOKEN=your-access-token
+   DOCKER_IMAGE_NAME=your-username/maxlab
+   ```
+
+2. Push the image:
+   ```powershell
+   ./scripts/docker-push.ps1
+   ```
+
+### Configuration
+
+The Docker container respects these environment variables (set in `.env` or `docker-compose.yml`):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JUPYTER_PORT` | `8888` | Port to expose JupyterLab |
+| `DOCKER_IMAGE_NAME` | `maxlab:latest` | Docker image name |
+
+### Volume Mounts
+
+The `workspace/` folder is mounted into the container, so notebooks persist on your host filesystem.
+
+---
+
 ## 🗂️ Workspace Structure
 
 The `workspace/` folder contains example notebooks that are built into the static site:
