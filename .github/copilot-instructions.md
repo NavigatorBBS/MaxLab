@@ -1,38 +1,44 @@
 # MaxLab Development Guide
 
-MaxLab is a local Python data science environment. This document provides comprehensive instructions for setting up the development environment, understanding the architecture, and following coding conventions. It also includes common tasks and troubleshooting tips to help contributors get started quickly and maintain code quality.
+MaxLab is a Docker-based Python data science environment using JupyterLab. This document provides instructions for development workflow, understanding the architecture, and following coding conventions.
 
-## Environment Setup
+## Quick Start
 
 ### Prerequisites
-- **Miniconda3**: Must be installed manually before running setup scripts
-- **Conda environment**: `maxlab` (Python 3.12)
-- **PowerShell**: Primary shell for Windows
+- **Docker**: Docker Engine with Compose plugin
+- **PowerShell**: For running helper scripts (Windows)
 
-### Setup Commands
-```powershell
-# Full setup (all steps)
-./setup.ps1
+### Start MaxLab
+```bash
+# Start MaxLab
+docker compose up
 
-# List available setup steps
-./setup.ps1 -ListSteps
+# Run in background
+docker compose up -d
 
-# Start JupyterLab
-./start.ps1
+# Stop
+docker compose down
 ```
 
-### Manual Environment Activation
+Access JupyterLab at `http://localhost:8888`
+
+### Using PowerShell Scripts
 ```powershell
-conda activate maxlab
-cd workspace
-jupyter lab
+# Build the image
+./scripts/docker-build.ps1
+
+# Run with docker compose
+./scripts/docker-run.ps1
+
+# Push to Docker Hub
+./scripts/docker-push.ps1
 ```
 
 ## Build, Test, and Lint Commands
 
 ### Linting
 ```powershell
-# Python linting (flake8)
+# Python linting (flake8) - run inside container or locally if Python installed
 flake8 workspace/src/ --max-line-length=120
 
 # PowerShell linting (PSScriptAnalyzer)
@@ -41,18 +47,21 @@ Invoke-ScriptAnalyzer -Path .\scripts\ -Recurse
 ```
 
 ### Pre-commit Hooks
-```powershell
-# Install pre-commit hooks
+Pre-commit hooks strip notebook outputs before commits:
+
+```bash
+# Install pre-commit (inside container or locally)
+pip install pre-commit
 pre-commit install
 
 # Run manually on all files
 pre-commit run --all-files
 
-# Strip notebook outputs manually
+# Strip specific notebook
 nbstripout workspace/notebooks/your-notebook.ipynb
 ```
 
-**Important**: Pre-commit automatically strips outputs from notebooks in `workspace/notebooks/` before each commit. Notebooks in version control should always have empty outputs.
+**Important**: Notebooks in `workspace/notebooks/` should have empty outputs in version control.
 
 ### GitHub Actions
 - **Linting workflow** (`.github/workflows/lint.yml`): Runs on push/PR to main
@@ -60,21 +69,46 @@ nbstripout workspace/notebooks/your-notebook.ipynb
   - Python linting with flake8
   - Notebook output validation with nbstripout
 
+- **Docker workflow** (`.github/workflows/docker.yml`): Runs on Git tag push
+  - Builds Docker image
+  - Pushes to Docker Hub with tag-based naming
+
 ## Architecture Overview
 
 ### Project Structure
 ```
 MaxLab/
 ├── workspace/
-│   └── notebooks/           # User Jupyter notebooks
-├── scripts/                 # PowerShell setup scripts
+│   └── notebooks/           # Jupyter notebooks (mounted volume)
+├── scripts/                 # PowerShell Docker helper scripts
+│   ├── docker-build.ps1     # Build image locally
+│   ├── docker-push.ps1      # Push to Docker Hub
+│   └── docker-run.ps1       # Start with compose
+├── docker/
+│   └── entrypoint.sh        # Container entrypoint
+├── Dockerfile               # Image definition
+├── docker-compose.yml       # Local development compose
 └── .github/
-    └── agents/              # Custom AI agent definitions
-        └── maxlab.agent.md  # MaxLab-specific agent config
+    └── workflows/
+        ├── docker.yml       # Docker Hub publishing
+        └── lint.yml         # Code quality checks
 ```
 
 ### Environment Variables
 - Loaded from root `.env` file (not committed)
 - Template provided in `.env.example`
-- `start.ps1` automatically loads `.env` for `JUPYTER_PORT` and `JUPYTER_NOTEBOOK_DIR`
+- Used by `docker-compose.yml` and scripts
 - Notebooks load variables with `python-dotenv`
+
+### Docker Hub Publishing
+Configure in `.env`:
+```env
+DOCKERHUB_USERNAME=your-username
+DOCKERHUB_TOKEN=your-access-token
+DOCKER_REPOSITORY=maxlab
+DOCKER_TAG=dev
+```
+
+**Local push**: `./scripts/docker-push.ps1` creates `latest` + `DOCKER_TAG`  
+**CI push**: Push Git tag to trigger automatic publish
+
