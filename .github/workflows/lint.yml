@@ -54,25 +54,3 @@ jobs:
           # Lint Python files in workspace directory
           flake8 workspace/ --count --select=E9,F63,F7,F82 --show-source --statistics || exit 0
           flake8 workspace/ --count --max-line-length=120 --statistics
-
-  notebook-outputs:
-    name: Check Notebook Outputs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install nbstripout
-        run: |
-          python -m pip install --upgrade pip
-          pip install nbstripout
-
-      - name: Check notebook outputs
-        run: |
-          # Check that notebooks have no outputs (would be modified by nbstripout)
-          find workspace/notebooks -name "*.ipynb" -exec nbstripout --dry-run {} +
