@@ -12,4 +12,5 @@ services:
     environment:
       - JUPYTER_PORT=8888
       - JUPYTER_NOTEBOOK_DIR=/home/maxlab/workspace
+      - GITHUB_COPILOT_PAT=${GITHUB_COPILOT_PAT:-}
     restart: unless-stopped
