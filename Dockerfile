@@ -17,6 +17,11 @@ RUN useradd -m -s /bin/bash maxlab && \
     mkdir -p /home/maxlab/workspace && \
     chown -R maxlab:maxlab /home/maxlab
 
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
 # Configure conda and create environment
 RUN conda config --add channels conda-forge && \
     conda config --set channel_priority strict && \
@@ -35,6 +40,10 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
     ipykernel \
     python-dotenv \
     && conda clean -afy
+
+# Install sysop in the maxlab environment
+RUN conda run -n ${CONDA_ENV} python -m pip install \
+    git+https://github.com/NavigatorBBS/sysop.git@v0.1.0
 
 # Register the Jupyter kernel
 RUN conda run -n ${CONDA_ENV} python -m ipykernel install \
