@@ -1,11 +1,10 @@
 .jp-MaxLabBranding {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 10px 8px 8px;
-  padding: 10px 8px;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 10px 8px 10px 12px;
   border: 1px solid var(--jp-border-color2, rgba(125, 125, 125, 0.2));
-  border-radius: 10px;
   background:
     linear-gradient(
       180deg,
@@ -15,10 +14,11 @@
 }
 
 .jp-MaxLabBranding-logo {
-  width: min(100%, 220px);
+  width: 220px;
+  max-width: 100%;
   aspect-ratio: 5 / 1;
   background-image: url("./maxlab_logo.png");
-  background-position: center;
+  background-position: left center;
   background-repeat: no-repeat;
   background-size: contain;
   filter: drop-shadow(0 0 8px rgba(82, 225, 221, 0.2));
