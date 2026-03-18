@@ -1,0 +1,56 @@
+{
+  "name": "@navigatorbbs/maxlab-branding",
+  "version": "0.1.0",
+  "description": "MaxLab branding plugin for the JupyterLab file browser sidebar.",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "maxlab"
+  ],
+  "license": "MIT",
+  "author": "NavigatorBBS",
+  "files": [
+    "lib/**/*.{d.ts,js,js.map}",
+    "style/**/*.{css,png,svg}",
+    "src/**/*.ts"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
+  "scripts": {
+    "build": "npm run build:lib && npm run build:labextension:dev",
+    "build:prod": "npm run clean && npm run build:lib:prod && npm run build:labextension",
+    "build:labextension": "jupyter labextension build . && npm run fix:metadata",
+    "build:labextension:dev": "jupyter labextension build --development True . && npm run fix:metadata",
+    "build:lib": "tsc --sourceMap",
+    "build:lib:prod": "tsc",
+    "clean": "rimraf lib tsconfig.tsbuildinfo ../../maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-branding",
+    "fix:metadata": "python ../../scripts/normalize_labextension_metadata.py ../../maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-branding/package.json",
+    "watch": "tsc -w --sourceMap"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^4.0.0",
+    "@jupyterlab/filebrowser": "^4.0.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.0.0",
+    "rimraf": "^5.0.5",
+    "typescript": "~5.9.3"
+  },
+  "sideEffects": [
+    "style/index.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "../../maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-branding",
+    "_build": {
+      "load": "static/remoteEntry.5dd5675747dbf84d63e2.js",
+      "extension": "./extension",
+      "style": "./style"
+    }
+  }
+}

@@ -1,0 +1,161 @@
+:root {
+  color-scheme: light;
+
+  --jp-border-width: 1px;
+  --jp-border-radius: 2px;
+
+  --jp-ui-font-family: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+    helvetica, arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --jp-content-font-family: var(--jp-ui-font-family);
+  --jp-code-font-family-default: menlo, consolas, "DejaVu Sans Mono", monospace;
+  --jp-code-font-family: var(--jp-code-font-family-default);
+
+  --jp-ui-font-color0: rgba(0, 0, 0, 1);
+  --jp-ui-font-color1: rgba(0, 0, 0, 0.87);
+  --jp-ui-font-color2: rgba(0, 0, 0, 0.58);
+  --jp-ui-font-color3: rgba(0, 0, 0, 0.38);
+  --jp-ui-inverse-font-color0: rgba(255, 255, 255, 1);
+  --jp-ui-inverse-font-color1: rgba(255, 255, 255, 1);
+  --jp-ui-inverse-font-color2: rgba(255, 255, 255, 0.7);
+  --jp-ui-inverse-font-color3: rgba(255, 255, 255, 0.5);
+
+  --jp-content-font-color0: rgba(0, 0, 0, 1);
+  --jp-content-font-color1: rgba(0, 0, 0, 0.87);
+  --jp-content-font-color2: rgba(0, 0, 0, 0.58);
+  --jp-content-font-color3: rgba(0, 0, 0, 0.38);
+  --jp-content-link-color: #0f7d86;
+  --jp-content-link-visited-color: #4d6782;
+  --jp-content-link-hover-color: #1799a5;
+
+  --jp-layout-color0: #ffffff;
+  --jp-layout-color1: #f7f9f7;
+  --jp-layout-color2: #e9eeeb;
+  --jp-layout-color3: #ccd5d1;
+  --jp-layout-color4: #9ea9a6;
+
+  --jp-inverse-layout-color0: #111418;
+  --jp-inverse-layout-color1: #171c22;
+  --jp-inverse-layout-color2: #222933;
+  --jp-inverse-layout-color3: #313b48;
+  --jp-inverse-layout-color4: #465261;
+
+  --jp-border-color0: #c4ceca;
+  --jp-border-color1: #b8c4c0;
+  --jp-border-color2: #dbe3df;
+  --jp-border-color3: #edf2ef;
+  --jp-inverse-border-color: #7b8a96;
+
+  --jp-brand-color0: #0f7d86;
+  --jp-brand-color1: #1799a5;
+  --jp-brand-color2: #49c4cf;
+  --jp-brand-color3: #bfeef1;
+  --jp-brand-color4: #e7f9fa;
+  --jp-accent-color0: #2c7b52;
+  --jp-accent-color1: #3b9465;
+  --jp-accent-color2: #7fc29a;
+  --jp-accent-color3: #d6ecde;
+
+  --jp-warn-color0: #e65100;
+  --jp-warn-color1: #f57c00;
+  --jp-warn-color2: #ffb74d;
+  --jp-warn-color3: #ffe0b2;
+  --jp-error-color0: #b71c1c;
+  --jp-error-color1: #d32f2f;
+  --jp-error-color2: #e57373;
+  --jp-error-color3: #ffcdd2;
+  --jp-success-color0: #2c7b52;
+  --jp-success-color1: #3b9465;
+  --jp-success-color2: #7fc29a;
+  --jp-success-color3: #d6ecde;
+  --jp-info-color0: #0f7d86;
+  --jp-info-color1: #1799a5;
+  --jp-info-color2: #49c4cf;
+  --jp-info-color3: #d5f4f6;
+
+  --jp-cell-editor-background: #f5f8f6;
+  --jp-cell-editor-border-color: var(--jp-border-color1);
+  --jp-cell-editor-active-background: var(--jp-layout-color0);
+  --jp-cell-editor-active-border-color: var(--jp-brand-color1);
+  --jp-cell-prompt-not-active-font-color: #65737f;
+
+  --jp-rendermime-error-background: #fdd;
+  --jp-rendermime-table-row-background: #f4f8f5;
+  --jp-rendermime-table-row-hover-background: rgba(23, 153, 165, 0.08);
+
+  --jp-dialog-background: rgba(0, 0, 0, 0.25);
+
+  --jp-toolbar-border-color: var(--jp-border-color1);
+  --jp-toolbar-micro-height: 8px;
+  --jp-toolbar-background: var(--jp-layout-color1);
+  --jp-toolbar-box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
+  --jp-toolbar-header-margin: 4px 4px 0 4px;
+  --jp-toolbar-active-background: #e0e7e4;
+
+  --jp-statusbar-height: 24px;
+
+  --jp-input-box-shadow: inset 0 0 2px rgba(73, 196, 207, 0.28);
+  --jp-input-active-background: var(--jp-layout-color0);
+  --jp-input-hover-background: var(--jp-layout-color0);
+  --jp-input-background: #f5f8f6;
+  --jp-input-border-color: var(--jp-inverse-border-color);
+  --jp-input-active-border-color: var(--jp-brand-color1);
+  --jp-input-active-box-shadow-color: rgba(23, 153, 165, 0.24);
+
+  --jp-editor-selected-background: rgba(73, 196, 207, 0.16);
+  --jp-editor-selected-focused-background: rgba(73, 196, 207, 0.22);
+  --jp-editor-cursor-color: var(--jp-ui-font-color0);
+
+  --jp-sidebar-min-width: 250px;
+
+  --jp-search-toggle-off-opacity: 0.5;
+  --jp-search-toggle-hover-opacity: 0.8;
+  --jp-search-toggle-on-opacity: 1;
+  --jp-search-selected-match-background-color: rgb(245, 200, 0);
+  --jp-search-selected-match-color: black;
+  --jp-search-unselected-match-background-color: var(--jp-inverse-layout-color0);
+  --jp-search-unselected-match-color: var(--jp-ui-inverse-font-color0);
+
+  --jp-accept-color-normal: #0f7d86;
+  --jp-accept-color-hover: #0c6a72;
+  --jp-accept-color-active: #094f54;
+  --jp-warn-color-normal: #c55f2b;
+  --jp-warn-color-hover: #b55222;
+  --jp-warn-color-active: #97441b;
+  --jp-reject-color-normal: #7b8a96;
+  --jp-reject-color-hover: #687784;
+  --jp-reject-color-active: #56636f;
+
+  --jp-jupyter-icon-color: #f37626;
+  --jp-notebook-icon-color: #f37626;
+  --jp-json-icon-color: #1799a5;
+  --jp-console-icon-background-color: #0f7d86;
+  --jp-console-icon-color: white;
+  --jp-terminal-icon-background-color: #313b48;
+  --jp-terminal-icon-color: #edf2ef;
+  --jp-text-editor-icon-color: #56636f;
+  --jp-inspector-icon-color: #56636f;
+  --jp-switch-color: #b8c4c0;
+  --jp-switch-true-position-color: var(--jp-brand-color1);
+}
+
+body {
+  background: var(--jp-layout-color1);
+}
+
+.lm-MenuBar-item:hover,
+.jp-ToolbarButtonComponent:hover,
+.jp-Button:hover,
+.jp-DirListing-item:hover,
+.jp-LauncherCard:hover {
+  background: rgba(23, 153, 165, 0.08);
+}
+
+.lm-DockPanel-tabBar .lm-TabBar-tab.p-mod-current,
+.jp-mod-current > .jp-DockPanel-tabBar .lm-TabBar-tab.p-mod-current {
+  border-bottom-color: var(--jp-brand-color1);
+}
+
+.jp-LauncherCard {
+  border-radius: 6px;
+}

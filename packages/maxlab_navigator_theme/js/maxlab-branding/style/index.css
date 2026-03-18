@@ -1,0 +1,25 @@
+.jp-MaxLabBranding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 8px 8px;
+  padding: 10px 8px;
+  border: 1px solid var(--jp-border-color2, rgba(125, 125, 125, 0.2));
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--jp-layout-color2, #1a1f26) 94%, white 6%),
+      color-mix(in srgb, var(--jp-layout-color1, #10161f) 96%, black 4%)
+    );
+}
+
+.jp-MaxLabBranding-logo {
+  width: min(100%, 220px);
+  aspect-ratio: 5 / 1;
+  background-image: url("./maxlab_logo.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 0 8px rgba(82, 225, 221, 0.2));
+}

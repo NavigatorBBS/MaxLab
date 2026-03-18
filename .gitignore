@@ -140,10 +140,12 @@ Thumbs.db
 
 # JupyterLab
 .jupyter/
+node_modules/
 
 # conda
 conda-env.yml.lock
 # Data files - exclude raw, processed, and temporary data
+workspace/
 workspace/raw/
 workspace/processed/
 workspace/temp/

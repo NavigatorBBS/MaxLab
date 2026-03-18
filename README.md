@@ -8,6 +8,7 @@
 **Features:**
 - 📓 **Pre-configured JupyterLab** - Ready-to-use data science environment with pandas, numpy, matplotlib, and more
 - 🐳 **Docker-based** - Consistent environment across all platforms
+- 🎨 **Custom MaxLab Themes** - Includes NavigatorBBS-inspired light and dark JupyterLab themes plus MaxLab sidebar branding
 - 🧹 **Automatic Output Cleaning** - Pre-commit hooks keep your repository clean
 - 🔧 **Easy Publishing** - Built-in scripts to push images to Docker Hub
 
@@ -102,6 +103,54 @@ To use the sysop Copilot AI chat agent Jupyter notebook extension:
 For more details on usage, see the sysop project: [https://github.com/NavigatorBBS/sysop](https://github.com/NavigatorBBS/sysop)
 
 Security note: keep `.env` local and never commit real tokens.
+
+---
+
+## 🎨 MaxLab JupyterLab Themes
+
+The Docker image now includes two MaxLab themes implemented as bundled JupyterLab extensions:
+
+- `MaxLab Navigator Dark`
+- `MaxLab Navigator Light`
+
+Both themes keep native JupyterLab layout and behavior while applying a NavigatorBBS-inspired palette with subtle teal/green accents.
+
+The image also includes a small branding extension that places `maxlab_logo.png` above the file browser launcher controls in the left sidebar.
+
+### Switching Themes
+
+1. Start MaxLab with Docker Compose.
+2. Open JupyterLab.
+3. Go to `Settings` -> `Theme`.
+4. Choose `MaxLab Navigator Dark` or `MaxLab Navigator Light`.
+
+### Theme Package Source
+
+The bundled Python package lives at `packages/maxlab_navigator_theme`.
+
+Frontend sources are split into three JupyterLab prebuilt extensions:
+
+- `js/maxlab-navigator-dark`
+- `js/maxlab-navigator-light`
+- `js/maxlab-branding`
+
+To rebuild the extension assets locally:
+
+```powershell
+npm install --prefix .\packages\maxlab_navigator_theme\js\maxlab-navigator-light
+npm install --prefix .\packages\maxlab_navigator_theme\js\maxlab-navigator-dark
+npm install --prefix .\packages\maxlab_navigator_theme\js\maxlab-branding
+
+npm run build:prod --prefix .\packages\maxlab_navigator_theme\js\maxlab-navigator-light
+npm run build:prod --prefix .\packages\maxlab_navigator_theme\js\maxlab-navigator-dark
+npm run build:prod --prefix .\packages\maxlab_navigator_theme\js\maxlab-branding
+```
+
+To rebuild the Python distribution:
+
+```powershell
+python -m build .\packages\maxlab_navigator_theme
+```
 
 ---
 

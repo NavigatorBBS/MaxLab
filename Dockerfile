@@ -45,6 +45,11 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
 RUN conda run -n ${CONDA_ENV} python -m pip install \
     git+https://github.com/NavigatorBBS/sysop.git@v0.1.0
 
+# Install the bundled MaxLab JupyterLab themes and branding extensions
+COPY packages/maxlab_navigator_theme /tmp/maxlab_navigator_theme
+RUN conda run -n ${CONDA_ENV} python -m pip install /tmp/maxlab_navigator_theme && \
+    rm -rf /tmp/maxlab_navigator_theme
+
 # Register the Jupyter kernel
 RUN conda run -n ${CONDA_ENV} python -m ipykernel install \
     --sys-prefix \
