@@ -86,6 +86,10 @@
   --jp-info-color2: #49c4cf;
   --jp-info-color3: #d5f4f6;
 
+  --jp-cell-padding: 5px;
+  --jp-cell-collapser-width: 8px;
+  --jp-cell-collapser-min-height: 20px;
+  --jp-cell-collapser-not-active-hover-opacity: 0.6;
   --jp-cell-editor-background: #f5f8f6;
   --jp-cell-editor-border-color: var(--jp-border-color1);
   --jp-cell-editor-active-background: var(--jp-layout-color0);
@@ -97,6 +101,8 @@
   --jp-cell-prompt-not-active-opacity: 0.5;
   --jp-cell-prompt-not-active-font-color: #65737f;
   --jp-notebook-padding: 16px;
+  --maxlab-notebook-cell-margin-y: 10px;
+  --maxlab-notebook-cell-margin-x: 0px;
 
   --jp-rendermime-error-background: #fdd;
   --jp-rendermime-table-row-background: #f4f8f5;
@@ -181,7 +187,8 @@ body {
 
 /* Give notebook cells a bit more breathing room in normal stacked layout. */
 .jp-Notebook:not(.jp-mod-sideBySide) .jp-Notebook-cell {
-  margin: 10px 8px;
+  margin: var(--maxlab-notebook-cell-margin-y)
+    var(--maxlab-notebook-cell-margin-x);
 }
 
 /* Keep code and Markdown cells on a consistent horizontal grid. */
