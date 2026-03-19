@@ -104,7 +104,7 @@
 
   --jp-editor-selected-background: rgba(36, 170, 181, 0.14);
   --jp-editor-selected-focused-background: rgba(36, 170, 181, 0.24);
-  --jp-editor-cursor-color: var(--jp-ui-font-color0);
+  --jp-editor-cursor-color: var(--jp-brand-color2);
 
   --jp-sidebar-min-width: 250px;
 
@@ -164,4 +164,19 @@ body {
 
 .jp-LauncherCard {
   border-radius: 6px;
+}
+
+/* CodeMirror generates a transparent caret on `.cm-line`, so override it in notebook cells. */
+.jp-Notebook .jp-CodeMirrorEditor .cm-line {
+  caret-color: var(--jp-editor-cursor-color) !important;
+}
+
+.jp-Notebook
+  .jp-CodeMirrorEditor
+  .cm-editor.cm-focused
+  > .cm-scroller
+  > .cm-cursorLayer
+  .cm-cursor {
+  border-left: var(--jp-code-cursor-width1) solid
+    var(--jp-editor-cursor-color);
 }
