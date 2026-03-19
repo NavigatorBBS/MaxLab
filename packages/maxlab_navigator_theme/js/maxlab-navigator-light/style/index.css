@@ -78,6 +78,7 @@
   --jp-cell-editor-active-background: var(--jp-layout-color0);
   --jp-cell-editor-active-border-color: var(--jp-brand-color1);
   --jp-cell-prompt-not-active-font-color: #65737f;
+  --jp-notebook-padding: 16px;
 
   --jp-rendermime-error-background: #fdd;
   --jp-rendermime-table-row-background: #f4f8f5;
@@ -158,6 +159,11 @@ body {
 
 .jp-LauncherCard {
   border-radius: 6px;
+}
+
+/* Give notebook cells a bit more breathing room in normal stacked layout. */
+.jp-Notebook:not(.jp-mod-sideBySide) .jp-Notebook-cell {
+  margin: 10px 8px;
 }
 
 /* CodeMirror generates a transparent caret on `.cm-line`, so override it in notebook cells. */
