@@ -185,6 +185,29 @@ body {
   margin: 10px 8px;
 }
 
+/* Give code cells a card-like glow inspired by the NavigatorBBS project panels. */
+.jp-Notebook .jp-CodeCell .jp-InputArea-editor {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12, 18, 28, 0.98),
+      rgba(18, 26, 38, 0.96)
+    );
+  border: 1px solid rgba(99, 210, 217, 0.45);
+  box-shadow: 0 0 14px rgba(99, 210, 217, 0.08);
+}
+
+.jp-Notebook.jp-mod-editMode .jp-CodeCell.jp-mod-active .jp-InputArea-editor {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(14, 21, 32, 0.99),
+      rgba(20, 30, 43, 0.98)
+    );
+  border-color: rgba(99, 210, 217, 0.65);
+  box-shadow: 0 0 18px rgba(99, 210, 217, 0.14);
+}
+
 /* CodeMirror generates a transparent caret on `.cm-line`, so override it in notebook cells. */
 .jp-Notebook .jp-CodeMirrorEditor .cm-line {
   caret-color: var(--jp-editor-cursor-color) !important;
