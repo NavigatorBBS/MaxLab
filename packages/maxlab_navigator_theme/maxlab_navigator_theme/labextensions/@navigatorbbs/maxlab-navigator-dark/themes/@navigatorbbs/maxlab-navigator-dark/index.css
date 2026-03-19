@@ -90,6 +90,11 @@
   --jp-cell-editor-border-color: var(--jp-border-color1);
   --jp-cell-editor-active-background: var(--jp-layout-color0);
   --jp-cell-editor-active-border-color: var(--jp-brand-color1);
+  --jp-cell-prompt-width: 64px;
+  --jp-cell-prompt-font-family: var(--jp-code-font-family-default);
+  --jp-cell-prompt-letter-spacing: 0;
+  --jp-cell-prompt-opacity: 1;
+  --jp-cell-prompt-not-active-opacity: 1;
   --jp-cell-prompt-not-active-font-color: #cfd8dc;
   --jp-notebook-padding: 16px;
 
@@ -183,6 +188,33 @@ body {
 /* Give notebook cells a bit more breathing room in normal stacked layout. */
 .jp-Notebook:not(.jp-mod-sideBySide) .jp-Notebook-cell {
   margin: 10px 8px;
+}
+
+/* Keep code and Markdown cells on a consistent horizontal grid. */
+.jp-Notebook .jp-CodeCell .jp-InputArea-editor,
+.jp-Notebook .jp-MarkdownCell .jp-InputArea-editor,
+.jp-Notebook .jp-MarkdownCell .jp-MarkdownOutput {
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.jp-Notebook .jp-InputPrompt,
+.jp-Notebook .jp-InputArea-prompt {
+  flex: 0 0 var(--jp-cell-prompt-width);
+  width: var(--jp-cell-prompt-width);
+  min-width: var(--jp-cell-prompt-width);
+  font-family: var(--jp-cell-prompt-font-family);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "liga" 0;
+  letter-spacing: var(--jp-cell-prompt-letter-spacing);
+  white-space: pre;
+}
+
+.jp-Notebook .jp-MarkdownCell .jp-MarkdownOutput {
+  width: calc(100% - var(--jp-cell-prompt-width));
+  margin-left: var(--jp-cell-prompt-width);
+  padding: 0 var(--jp-code-padding);
 }
 
 /* Give code cells a card-like glow inspired by the NavigatorBBS project panels. */
