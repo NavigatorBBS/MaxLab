@@ -218,12 +218,6 @@ body {
   white-space: pre;
 }
 
-.jp-Notebook .jp-MarkdownCell .jp-MarkdownOutput {
-  width: calc(100% - var(--jp-cell-prompt-width));
-  margin-left: var(--jp-cell-prompt-width);
-  padding: 0 var(--jp-code-padding);
-}
-
 /* Give code cells a card-like glow inspired by the NavigatorBBS project panels. */
 .jp-Notebook .jp-CodeCell .jp-InputArea-editor {
   background:
