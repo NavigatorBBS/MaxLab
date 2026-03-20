@@ -177,7 +177,7 @@ body {
 .lm-MenuBar-item:hover,
 .jp-ToolbarButtonComponent:hover,
 .jp-Button:hover,
-.jp-DirListing-item:hover,
+.jp-DirListing-item:hover:not(.jp-mod-selected),
 .jp-LauncherCard:hover {
   background: rgba(36, 170, 181, 0.08);
 }
@@ -185,6 +185,14 @@ body {
 .lm-DockPanel-tabBar .lm-TabBar-tab.p-mod-current,
 .jp-mod-current > .jp-DockPanel-tabBar .lm-TabBar-tab.p-mod-current {
   border-bottom-color: var(--jp-brand-color1);
+}
+
+.jp-DirListing-item:hover:not(.jp-mod-selected),
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemText,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemModified,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemFileSize,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) mark {
+  color: inherit;
 }
 
 .jp-LauncherCard {
