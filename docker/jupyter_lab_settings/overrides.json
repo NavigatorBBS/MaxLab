@@ -1,0 +1,7 @@
+{
+  "@jupyterlab/apputils-extension:themes": {
+    "theme": "MaxLab Navigator Dark",
+    "adaptive-theme": false,
+    "preferred-dark-theme": "MaxLab Navigator Dark"
+  }
+}

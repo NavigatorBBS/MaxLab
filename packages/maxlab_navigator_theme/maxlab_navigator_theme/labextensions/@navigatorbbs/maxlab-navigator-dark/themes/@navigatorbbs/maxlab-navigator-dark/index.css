@@ -1,0 +1,265 @@
+:root {
+  color-scheme: dark;
+
+  --jp-border-width: 1px;
+  --jp-border-radius: 2px;
+
+  --jp-ui-font-family: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+    helvetica, arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --jp-content-font-family: var(--jp-ui-font-family);
+  --jp-code-font-family-default: menlo, consolas, "DejaVu Sans Mono", monospace;
+  --jp-code-font-family: var(--jp-code-font-family-default);
+
+  --jp-ui-font-color0: rgba(255, 255, 255, 1);
+  --jp-ui-font-color1: rgba(255, 255, 255, 0.87);
+  --jp-ui-font-color2: rgba(255, 255, 255, 0.6);
+  --jp-ui-font-color3: rgba(255, 255, 255, 0.38);
+  --jp-ui-inverse-font-color0: rgba(0, 0, 0, 1);
+  --jp-ui-inverse-font-color1: rgba(0, 0, 0, 0.8);
+  --jp-ui-inverse-font-color2: rgba(0, 0, 0, 0.5);
+  --jp-ui-inverse-font-color3: rgba(0, 0, 0, 0.3);
+
+  --jp-content-font-color0: rgba(255, 255, 255, 1);
+  --jp-content-font-color1: rgba(255, 255, 255, 1);
+  --jp-content-font-color2: rgba(255, 255, 255, 0.72);
+  --jp-content-font-color3: rgba(255, 255, 255, 0.5);
+  --jp-content-link-color: #6fd8dd;
+  --jp-content-link-visited-color: #96c7ef;
+  --jp-content-link-hover-color: #96e8ec;
+  --jp-content-line-height: 1.6;
+  --jp-content-font-scale-factor: 1.2;
+  --jp-content-font-size0: 0.83333em;
+  --jp-content-font-size1: 14px;
+  --jp-content-font-size2: 1.2em;
+  --jp-content-font-size3: 1.44em;
+  --jp-content-font-size4: 1.728em;
+  --jp-content-font-size5: 2.0736em;
+  --jp-content-presentation-font-size1: 17px;
+  --jp-content-heading-line-height: 1;
+  --jp-content-heading-margin-top: 1.2em;
+  --jp-content-heading-margin-bottom: 0.8em;
+  --jp-content-heading-font-weight: 500;
+
+  --jp-layout-color0: #111418;
+  --jp-layout-color1: #171c22;
+  --jp-layout-color2: #222933;
+  --jp-layout-color3: #313b48;
+  --jp-layout-color4: #465261;
+
+  --jp-inverse-layout-color0: #ffffff;
+  --jp-inverse-layout-color1: #ffffff;
+  --jp-inverse-layout-color2: #eceff1;
+  --jp-inverse-layout-color3: #cfd8dc;
+  --jp-inverse-layout-color4: #90a4ae;
+
+  --jp-border-color0: #5c6775;
+  --jp-border-color1: #4d5966;
+  --jp-border-color2: #313c48;
+  --jp-border-color3: #202833;
+  --jp-inverse-border-color: #90a4ae;
+
+  --jp-brand-color0: #177a83;
+  --jp-brand-color1: #24aab5;
+  --jp-brand-color2: #63d2d9;
+  --jp-brand-color3: #a5edf0;
+  --jp-brand-color4: #dff9fb;
+  --jp-accent-color0: #2d7951;
+  --jp-accent-color1: #3f9867;
+  --jp-accent-color2: #83c8a0;
+  --jp-accent-color3: #caead5;
+
+  --jp-warn-color0: #f57c00;
+  --jp-warn-color1: #ff9800;
+  --jp-warn-color2: #ffb74d;
+  --jp-warn-color3: #ffe0b2;
+  --jp-error-color0: #d32f2f;
+  --jp-error-color1: #f44336;
+  --jp-error-color2: #e57373;
+  --jp-error-color3: #ffcdd2;
+  --jp-success-color0: #2d7951;
+  --jp-success-color1: #3f9867;
+  --jp-success-color2: #83c8a0;
+  --jp-success-color3: #caead5;
+  --jp-info-color0: #177a83;
+  --jp-info-color1: #24aab5;
+  --jp-info-color2: #63d2d9;
+  --jp-info-color3: #c9f1f4;
+
+  --jp-cell-padding: 5px;
+  --jp-cell-collapser-width: 8px;
+  --jp-cell-collapser-min-height: 20px;
+  --jp-cell-collapser-not-active-hover-opacity: 0.6;
+  --jp-cell-editor-background: var(--jp-layout-color1);
+  --jp-cell-editor-border-color: var(--jp-border-color1);
+  --jp-cell-editor-active-background: var(--jp-layout-color0);
+  --jp-cell-editor-active-border-color: var(--jp-brand-color1);
+  --jp-cell-prompt-width: 64px;
+  --jp-cell-prompt-font-family: var(--jp-code-font-family-default);
+  --jp-cell-prompt-letter-spacing: 0;
+  --jp-cell-prompt-opacity: 1;
+  --jp-cell-prompt-not-active-opacity: 1;
+  --jp-cell-prompt-not-active-font-color: #cfd8dc;
+  --jp-notebook-padding: 16px;
+  --maxlab-notebook-cell-margin-y: 10px;
+  --maxlab-notebook-cell-margin-x: 0px;
+
+  --jp-rendermime-error-background: rgba(244, 67, 54, 0.28);
+  --jp-rendermime-table-row-background: var(--jp-layout-color1);
+  --jp-rendermime-table-row-hover-background: rgba(36, 170, 181, 0.16);
+
+  --jp-dialog-background: rgba(6, 10, 13, 0.72);
+
+  --jp-toolbar-border-color: var(--jp-border-color2);
+  --jp-toolbar-micro-height: 8px;
+  --jp-toolbar-background: var(--jp-layout-color1);
+  --jp-toolbar-box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.8);
+  --jp-toolbar-header-margin: 4px 4px 0 4px;
+  --jp-toolbar-active-background: var(--jp-layout-color0);
+
+  --jp-statusbar-height: 24px;
+
+  --jp-input-box-shadow: inset 0 0 2px rgba(99, 210, 217, 0.35);
+  --jp-input-active-background: var(--jp-layout-color0);
+  --jp-input-hover-background: var(--jp-layout-color2);
+  --jp-input-background: #202731;
+  --jp-input-border-color: var(--jp-inverse-border-color);
+  --jp-input-active-border-color: var(--jp-brand-color1);
+  --jp-input-active-box-shadow-color: rgba(36, 170, 181, 0.3);
+
+  --jp-editor-selected-background: rgba(36, 170, 181, 0.14);
+  --jp-editor-selected-focused-background: rgba(36, 170, 181, 0.24);
+  --jp-editor-cursor-color: var(--jp-brand-color2);
+
+  --jp-sidebar-min-width: 250px;
+
+  --jp-search-toggle-off-opacity: 0.6;
+  --jp-search-toggle-hover-opacity: 0.8;
+  --jp-search-toggle-on-opacity: 1;
+  --jp-search-selected-match-background-color: rgb(255, 225, 0);
+  --jp-search-selected-match-color: black;
+  --jp-search-unselected-match-background-color: var(--jp-inverse-layout-color0);
+  --jp-search-unselected-match-color: var(--jp-ui-inverse-font-color0);
+
+  --jp-scrollbar-background-color: #34383d;
+  --jp-scrollbar-thumb-color: 88, 104, 114;
+  --jp-scrollbar-endpad: 3px;
+  --jp-scrollbar-thumb-margin: 3.5px;
+  --jp-scrollbar-thumb-radius: 9px;
+
+  --jp-accept-color-normal: #177a83;
+  --jp-accept-color-hover: #156b73;
+  --jp-accept-color-active: #104f54;
+  --jp-warn-color-normal: #c85a2f;
+  --jp-warn-color-hover: #b94f27;
+  --jp-warn-color-active: #9f431f;
+  --jp-reject-color-normal: #6b7785;
+  --jp-reject-color-hover: #5a6775;
+  --jp-reject-color-active: #485361;
+
+  --jp-jupyter-icon-color: #f37626;
+  --jp-notebook-icon-color: #f37626;
+  --jp-json-icon-color: #24aab5;
+  --jp-console-icon-background-color: #177a83;
+  --jp-console-icon-color: white;
+  --jp-terminal-icon-background-color: #dfe4e8;
+  --jp-terminal-icon-color: #1f2933;
+  --jp-text-editor-icon-color: #dfe4e8;
+  --jp-inspector-icon-color: #dfe4e8;
+  --jp-switch-color: #9aa5b1;
+  --jp-switch-true-position-color: var(--jp-brand-color1);
+}
+
+body {
+  background: var(--jp-layout-color1);
+}
+
+.lm-MenuBar-item:hover,
+.jp-ToolbarButtonComponent:hover,
+.jp-Button:hover,
+.jp-DirListing-item:hover:not(.jp-mod-selected),
+.jp-LauncherCard:hover {
+  background: rgba(36, 170, 181, 0.08);
+}
+
+.lm-DockPanel-tabBar .lm-TabBar-tab.p-mod-current,
+.jp-mod-current > .jp-DockPanel-tabBar .lm-TabBar-tab.p-mod-current {
+  border-bottom-color: var(--jp-brand-color1);
+}
+
+.jp-DirListing-item:hover:not(.jp-mod-selected),
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemText,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemModified,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) .jp-DirListing-itemFileSize,
+.jp-DirListing-content .jp-DirListing-item:hover:not(.jp-mod-selected) mark {
+  color: inherit;
+}
+
+.jp-LauncherCard {
+  border-radius: 6px;
+}
+
+/* Give notebook cells a bit more breathing room in normal stacked layout. */
+.jp-Notebook:not(.jp-mod-sideBySide) .jp-Notebook-cell {
+  margin: var(--maxlab-notebook-cell-margin-y)
+    var(--maxlab-notebook-cell-margin-x);
+}
+
+/* Keep code and Markdown cells on a consistent horizontal grid. */
+.jp-Notebook .jp-CodeCell .jp-InputArea-editor,
+.jp-Notebook .jp-MarkdownCell .jp-InputArea-editor,
+.jp-Notebook .jp-MarkdownCell .jp-MarkdownOutput {
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.jp-Notebook .jp-InputPrompt,
+.jp-Notebook .jp-InputArea-prompt {
+  flex: 0 0 var(--jp-cell-prompt-width);
+  width: var(--jp-cell-prompt-width);
+  min-width: var(--jp-cell-prompt-width);
+  font-family: var(--jp-cell-prompt-font-family);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "liga" 0;
+  letter-spacing: var(--jp-cell-prompt-letter-spacing);
+  white-space: pre;
+}
+
+/* Give code cells a card-like glow inspired by the NavigatorBBS project panels. */
+.jp-Notebook .jp-CodeCell .jp-InputArea-editor {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12, 18, 28, 0.98),
+      rgba(18, 26, 38, 0.96)
+    );
+  border: 1px solid rgba(99, 210, 217, 0.45);
+  box-shadow: 0 0 14px rgba(99, 210, 217, 0.08);
+}
+
+.jp-Notebook.jp-mod-editMode .jp-CodeCell.jp-mod-active .jp-InputArea-editor {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(14, 21, 32, 0.99),
+      rgba(20, 30, 43, 0.98)
+    );
+  border-color: rgba(99, 210, 217, 0.65);
+  box-shadow: 0 0 18px rgba(99, 210, 217, 0.14);
+}
+
+/* CodeMirror generates a transparent caret on `.cm-line`, so override it in notebook cells. */
+.jp-Notebook .jp-CodeMirrorEditor .cm-line {
+  caret-color: var(--jp-editor-cursor-color) !important;
+}
+
+.jp-Notebook
+  .jp-CodeMirrorEditor
+  .cm-editor.cm-focused
+  > .cm-scroller
+  > .cm-cursorLayer
+  .cm-cursor {
+  border-left: var(--jp-code-cursor-width1) solid
+    var(--jp-editor-cursor-color);
+}

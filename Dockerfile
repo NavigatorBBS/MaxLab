@@ -45,6 +45,17 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
 RUN conda run -n ${CONDA_ENV} python -m pip install \
     git+https://github.com/NavigatorBBS/sysop.git@v0.1.0
 
+# Install the bundled MaxLab JupyterLab themes and branding extensions
+COPY packages/maxlab_navigator_theme /tmp/maxlab_navigator_theme
+RUN conda run -n ${CONDA_ENV} python -m pip install /tmp/maxlab_navigator_theme && \
+    rm -rf /tmp/maxlab_navigator_theme
+
+# Default JupyterLab to the bundled MaxLab dark theme on startup
+COPY docker/jupyter_lab_settings/overrides.json /tmp/maxlab-jupyter-overrides.json
+RUN mkdir -p /opt/conda/envs/${CONDA_ENV}/share/jupyter/lab/settings && \
+    cp /tmp/maxlab-jupyter-overrides.json /opt/conda/envs/${CONDA_ENV}/share/jupyter/lab/settings/overrides.json && \
+    rm /tmp/maxlab-jupyter-overrides.json
+
 # Register the Jupyter kernel
 RUN conda run -n ${CONDA_ENV} python -m ipykernel install \
     --sys-prefix \

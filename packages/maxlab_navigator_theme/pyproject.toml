@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "maxlab_navigator_theme"
+version = "0.1.0"
+description = "NavigatorBBS-inspired JupyterLab themes and branding for MaxLab."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "NavigatorBBS" }
+]
+classifiers = [
+  "Framework :: Jupyter",
+  "Framework :: Jupyter :: JupyterLab",
+  "Framework :: Jupyter :: JupyterLab :: 4",
+  "Framework :: Jupyter :: JupyterLab :: Extensions",
+  "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
+  "Framework :: Jupyter :: JupyterLab :: Extensions :: Themes",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13"
+]
+dependencies = ["jupyterlab>=4.0.0,<5"]
+
+[project.urls]
+Homepage = "https://github.com/NavigatorBBS/MaxLab"
+Repository = "https://github.com/NavigatorBBS/MaxLab"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/README.md",
+  "/pyproject.toml",
+  "/setup.py",
+  "/install",
+  "/js",
+  "/maxlab_navigator_theme"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["maxlab_navigator_theme"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"install/maxlab-branding.json" = "share/jupyter/labextensions/@navigatorbbs/maxlab-branding/install.json"
+"install/maxlab-navigator-dark.json" = "share/jupyter/labextensions/@navigatorbbs/maxlab-navigator-dark/install.json"
+"install/maxlab-navigator-light.json" = "share/jupyter/labextensions/@navigatorbbs/maxlab-navigator-light/install.json"
+"maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-branding" = "share/jupyter/labextensions/@navigatorbbs/maxlab-branding"
+"maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-navigator-dark" = "share/jupyter/labextensions/@navigatorbbs/maxlab-navigator-dark"
+"maxlab_navigator_theme/labextensions/@navigatorbbs/maxlab-navigator-light" = "share/jupyter/labextensions/@navigatorbbs/maxlab-navigator-light"
