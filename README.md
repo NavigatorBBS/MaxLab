@@ -2,7 +2,7 @@
 
 [![Linting](https://github.com/NavigatorBBS/maxlab/workflows/Linting/badge.svg)](https://github.com/NavigatorBBS/maxlab/actions/workflows/lint.yml)
 [![Docker Build and Push](https://github.com/NavigatorBBS/maxlab/workflows/Docker%20Build%20and%20Push/badge.svg)](https://github.com/NavigatorBBS/maxlab/actions/workflows/docker.yml)
- 
+
 **MaxLab** is a Python data science environment based on JupyterLab
 
 **Features:**
@@ -116,6 +116,8 @@ The Docker image now includes two MaxLab themes implemented as bundled JupyterLa
 Both themes keep native JupyterLab layout and behavior while applying a NavigatorBBS-inspired palette with subtle teal/green accents.
 
 The image also includes a small branding extension that places `maxlab_logo.png` above the file browser launcher controls in the left sidebar.
+
+MaxLab starts with `MaxLab Navigator Dark` by default on first launch.
 
 ### Switching Themes
 
