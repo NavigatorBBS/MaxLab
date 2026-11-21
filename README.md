@@ -9,6 +9,7 @@
 - 📓 **Pre-configured JupyterLab** - Ready-to-use data science environment with pandas, numpy, matplotlib, and more
 - 🐳 **Docker-based** - Consistent environment across all platforms
 - 🎨 **Custom MaxLab Themes** - Includes NavigatorBBS-inspired light and dark JupyterLab themes plus MaxLab sidebar branding
+- 🔧 **Git & GitHub CLI** - `git` and `gh` preinstalled system-wide for version control from container terminals
 - 🧹 **Automatic Output Cleaning** - Pre-commit hooks keep your repository clean
 - 🔧 **Easy Publishing** - Built-in scripts to push images to Docker Hub
 
