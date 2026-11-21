@@ -47,6 +47,16 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
     python-dotenv \
     && conda clean -afy
 
+# Preinstall JupyterLab extensions (PyPI search in the Extension Manager no longer works,
+# so extensions are added here instead of via the UI)
+RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir \
+    jupyterlab-git \
+    jupyterlab-lsp \
+    "python-lsp-server[all]" \
+    jupyterlab_code_formatter \
+    black \
+    isort
+
 # Install the bundled MaxLab JupyterLab themes and branding extensions
 COPY packages/maxlab_navigator_theme /tmp/maxlab_navigator_theme
 RUN conda run -n ${CONDA_ENV} python -m pip install /tmp/maxlab_navigator_theme && \

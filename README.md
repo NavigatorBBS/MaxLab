@@ -180,3 +180,23 @@ Install packages at runtime within a notebook:
 ```
 
 ---
+
+## 🧩 JupyterLab Extensions
+
+These extensions are preinstalled in the image:
+
+| Extension | Purpose |
+|-----------|---------|
+| `jupyterlab-git` | Git panel for staging, committing, and diffing |
+| `jupyterlab-lsp` + `python-lsp-server[all]` | Autocomplete, hover docs, diagnostics, go-to-definition |
+| `jupyterlab_code_formatter` + `black` + `isort` | Format notebook cells and files |
+
+The Extension Manager runs in **read-only** mode (`--LabApp.extension_manager=readonly` in `docker/entrypoint.sh`). PyPI removed the XML-RPC `browse` API that JupyterLab used to search for extensions, so in-UI search failed with HTTP 500 errors (see [jupyterlab/jupyterlab#19932](https://github.com/jupyterlab/jupyterlab/issues/19932)). The panel still lists installed extensions.
+
+To add another extension, add it to the extensions `pip install` step in the `Dockerfile` and rebuild:
+
+```powershell
+docker compose up -d --build
+```
+
+---

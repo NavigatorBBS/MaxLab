@@ -89,6 +89,13 @@ git push origin v1.0.0
 
 ---
 
+## 🧩 Extensions
+
+- Preinstalled: `jupyterlab-git`, `jupyterlab-lsp`, `jupyterlab_code_formatter`
+- Extension Manager is read-only (PyPI search API removed); add extensions via `pip install` in the `Dockerfile` and rebuild
+
+---
+
 ## 🔗 Useful Links
 
 - Docker workflow: `.github/workflows/docker.yml`
