@@ -23,4 +23,5 @@ exec jupyter lab \
     --ServerApp.token='' \
     --ServerApp.password='' \
     --ServerApp.base_url="/" \
+    --LabApp.extension_manager=readonly \
     --no-browser

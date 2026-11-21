@@ -86,7 +86,13 @@ git push origin v1.0.0
 - `workspace/notebooks/` - Jupyter notebooks
 - Mounted as volume - changes persist on host
 - Pre-commit hooks strip outputs before git commit
-- Image includes `sysop` in the `maxlab` conda environment (build-time install from `git+https://github.com/NavigatorBBS/sysop.git@v0.1.0`)
+
+---
+
+## 🧩 Extensions
+
+- Preinstalled: `jupyterlab-git`, `jupyterlab-lsp`, `jupyterlab_code_formatter`
+- Extension Manager is read-only (PyPI search API removed); add extensions via `pip install` in the `Dockerfile` and rebuild
 
 ---
 
@@ -95,7 +101,6 @@ git push origin v1.0.0
 - Docker workflow: `.github/workflows/docker.yml`
 - Compose config: `docker-compose.yml`
 - Dockerfile: `Dockerfile`
-- Sysop project usage: `https://github.com/NavigatorBBS/sysop`
 
 ---
 

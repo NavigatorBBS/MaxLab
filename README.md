@@ -9,6 +9,7 @@
 - 📓 **Pre-configured JupyterLab** - Ready-to-use data science environment with pandas, numpy, matplotlib, and more
 - 🐳 **Docker-based** - Consistent environment across all platforms
 - 🎨 **Custom MaxLab Themes** - Includes NavigatorBBS-inspired light and dark JupyterLab themes plus MaxLab sidebar branding
+- 🔧 **Git & GitHub CLI** - `git` and `gh` preinstalled system-wide for version control from container terminals
 - 🧹 **Automatic Output Cleaning** - Pre-commit hooks keep your repository clean
 - 🔧 **Easy Publishing** - Built-in scripts to push images to Docker Hub
 
@@ -60,7 +61,6 @@ JUPYTER_PORT=8888                  # Port to expose JupyterLab
 JUPYTER_NOTEBOOK_DIR=workspace     # Notebooks directory
 DATA_DIR=workspace/data            # Data directory
 API_KEY=your_api_key_here          # Example secret
-GITHUB_COPILOT_PAT=your_github_copilot_pat_here  # Copilot token for sysop chat extension
 ```
 
 Load variables in a notebook:
@@ -77,30 +77,9 @@ The container respects these environment variables (set in `.env` or `docker-com
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JUPYTER_PORT` | `8888` | Port to expose JupyterLab |
-| `GITHUB_COPILOT_PAT` | *(empty)* | GitHub Copilot token used by the sysop Copilot AI chat notebook extension |
 | `DOCKERHUB_USERNAME` | `local` | Docker namespace/user |
 | `DOCKER_REPOSITORY` | `maxlab` | Docker repository name |
 | `DOCKER_TAG` | `latest` | Docker image tag |
-
-### Sysop Copilot AI Chat Extension
-
-To use the sysop Copilot AI chat agent Jupyter notebook extension:
-
-1. Add your token to `.env`:
-
-	```env
-	GITHUB_COPILOT_PAT=your_github_copilot_pat_here
-	```
-
-2. Start or restart the container so the new environment variable is loaded:
-
-	```bash
-	docker compose up --build -d
-	```
-
-3. Open JupyterLab and run the sysop notebook extension. It reads `GITHUB_COPILOT_PAT` from the container environment.
-
-For more details on usage, see the sysop project: [https://github.com/NavigatorBBS/sysop](https://github.com/NavigatorBBS/sysop)
 
 Security note: keep `.env` local and never commit real tokens.
 
@@ -194,12 +173,30 @@ Configure these secrets in your GitHub repository:
 
 ## 📦 Runtime Package Installation
 
-The Docker image already includes `sysop` in the `maxlab` conda environment (installed at build time from `git+https://github.com/NavigatorBBS/sysop.git@v0.1.0`).
-
 Install packages at runtime within a notebook:
 
 ```python
 %pip install package-name
+```
+
+---
+
+## 🧩 JupyterLab Extensions
+
+These extensions are preinstalled in the image:
+
+| Extension | Purpose |
+|-----------|---------|
+| `jupyterlab-git` | Git panel for staging, committing, and diffing |
+| `jupyterlab-lsp` + `python-lsp-server[all]` | Autocomplete, hover docs, diagnostics, go-to-definition |
+| `jupyterlab_code_formatter` + `black` + `isort` | Format notebook cells and files |
+
+The Extension Manager runs in **read-only** mode (`--LabApp.extension_manager=readonly` in `docker/entrypoint.sh`). PyPI removed the XML-RPC `browse` API that JupyterLab used to search for extensions, so in-UI search failed with HTTP 500 errors (see [jupyterlab/jupyterlab#19932](https://github.com/jupyterlab/jupyterlab/issues/19932)). The panel still lists installed extensions.
+
+To add another extension, add it to the extensions `pip install` step in the `Dockerfile` and rebuild:
+
+```powershell
+docker compose up -d --build
 ```
 
 ---

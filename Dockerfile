@@ -17,9 +17,15 @@ RUN useradd -m -s /bin/bash maxlab && \
     mkdir -p /home/maxlab/workspace && \
     chown -R maxlab:maxlab /home/maxlab
 
-# Install system dependencies
+# Install git and GitHub CLI (system-wide)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git && \
+    apt-get install -y --no-install-recommends git curl ca-certificates && \
+    mkdir -p -m 755 /etc/apt/keyrings && \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gh && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure conda and create environment
@@ -41,9 +47,15 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
     python-dotenv \
     && conda clean -afy
 
-# Install sysop in the maxlab environment
-RUN conda run -n ${CONDA_ENV} python -m pip install \
-    git+https://github.com/NavigatorBBS/sysop.git@v0.1.0
+# Preinstall JupyterLab extensions (PyPI search in the Extension Manager no longer works,
+# so extensions are added here instead of via the UI)
+RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir \
+    jupyterlab-git \
+    jupyterlab-lsp \
+    "python-lsp-server[all]" \
+    jupyterlab_code_formatter \
+    black \
+    isort
 
 # Install the bundled MaxLab JupyterLab themes and branding extensions
 COPY packages/maxlab_navigator_theme /tmp/maxlab_navigator_theme
