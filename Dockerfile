@@ -43,6 +43,7 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
     matplotlib \
     seaborn \
     scikit-learn \
+    duckdb \
     ipykernel \
     python-dotenv \
     && conda clean -afy
