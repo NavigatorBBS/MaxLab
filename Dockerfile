@@ -28,6 +28,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends gh && \
     rm -rf /var/lib/apt/lists/*
 
+# Install GitHub Copilot CLI system-wide
+RUN curl -fsSL https://gh.io/copilot-install -o /tmp/copilot-install.sh && \
+    bash /tmp/copilot-install.sh && \
+    rm /tmp/copilot-install.sh
+
 # Configure conda and create environment
 RUN conda config --add channels conda-forge && \
     conda config --set channel_priority strict && \
@@ -43,6 +48,7 @@ RUN conda run -n ${CONDA_ENV} conda install -y \
     matplotlib \
     seaborn \
     scikit-learn \
+    duckdb \
     ipykernel \
     python-dotenv \
     && conda clean -afy

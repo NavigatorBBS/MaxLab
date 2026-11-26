@@ -10,6 +10,7 @@
 - 🐳 **Docker-based** - Consistent environment across all platforms
 - 🎨 **Custom MaxLab Themes** - Includes NavigatorBBS-inspired light and dark JupyterLab themes plus MaxLab sidebar branding
 - 🔧 **Git & GitHub CLI** - `git` and `gh` preinstalled system-wide for version control from container terminals
+- 🤖 **GitHub Copilot CLI** - Available from JupyterLab terminals
 - 🧹 **Automatic Output Cleaning** - Pre-commit hooks keep your repository clean
 - 🔧 **Easy Publishing** - Built-in scripts to push images to Docker Hub
 
@@ -31,6 +32,24 @@ docker compose down
 ```
 
 JupyterLab will be available at `http://localhost:8888`
+
+### GitHub Copilot CLI
+
+Rebuild the image to include Copilot CLI:
+
+```bash
+docker compose up -d --build
+```
+
+Open a terminal in JupyterLab, navigate to your project, and run `copilot`.
+Use `/login` in the CLI and follow the prompts, or run `copilot login --device-code`
+in the terminal to authenticate using a browser on your host. GitHub Copilot use
+requires an active subscription and, where applicable, permission from your
+organization. See the [GitHub authentication guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli).
+
+Login is not persisted when the container is recreated. In a headless container
+without a system keychain, the CLI may offer to store the token in plaintext in
+the container's home directory. Do not copy credentials into the workspace or image.
 
 ### Using PowerShell Scripts
 

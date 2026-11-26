@@ -11,6 +11,30 @@
   --jp-code-font-family-default: menlo, consolas, "DejaVu Sans Mono", monospace;
   --jp-code-font-family: var(--jp-code-font-family-default);
 
+  --jp-mirror-editor-keyword-color: #6fe0e7;
+  --jp-mirror-editor-atom-color: #d6a0fa;
+  --jp-mirror-editor-number-color: #ffb86c;
+  --jp-mirror-editor-def-color: #82aaff;
+  --jp-mirror-editor-variable-color: #d8e2eb;
+  --jp-mirror-editor-variable-2-color: #c792ea;
+  --jp-mirror-editor-variable-3-color: #a5d6a7;
+  --jp-mirror-editor-punctuation-color: #a8b6c8;
+  --jp-mirror-editor-property-color: #8bd5ca;
+  --jp-mirror-editor-operator-color: #f2b48f;
+  --jp-mirror-editor-comment-color: #8292a8;
+  --jp-mirror-editor-string-color: #ecc48d;
+  --jp-mirror-editor-string-2-color: #f78c6c;
+  --jp-mirror-editor-meta-color: #c792ea;
+  --jp-mirror-editor-qualifier-color: #b0bec5;
+  --jp-mirror-editor-builtin-color: #80cbc4;
+  --jp-mirror-editor-bracket-color: #89ddff;
+  --jp-mirror-editor-tag-color: #f07178;
+  --jp-mirror-editor-attribute-color: #ffcb6b;
+  --jp-mirror-editor-header-color: #82aaff;
+  --jp-mirror-editor-quote-color: #a5d6a7;
+  --jp-mirror-editor-link-color: #80cbc4;
+  --jp-mirror-editor-error-color: #ff6b6b;
+
   --jp-ui-font-color0: rgba(255, 255, 255, 1);
   --jp-ui-font-color1: rgba(255, 255, 255, 0.87);
   --jp-ui-font-color2: rgba(255, 255, 255, 0.6);
